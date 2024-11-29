@@ -15,13 +15,13 @@ describe("Test status API", async () => {
     }>;
   } = await fetch("http://localhost:3000/api/status");
 
-  it("response should return 200", async () => {
+  it("should return 200", () => {
     expect(response.status).toEqual(200);
   });
 
   const data = await response.json();
 
-  it("response dependencies database", () => {
+  it("should validate database dependencies", () => {
     expect(data.updatedAt).toMatch(
       /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/,
     );
