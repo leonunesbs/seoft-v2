@@ -1,0 +1,28 @@
+{
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "/favicon/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon/web-app-manifest-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon/web-app-manifest-192x192.png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    }
+  ],
+  "name": "iSEOFT",
+  "orientation": "portrait",
+  "short_name": "iSEOFT",
+  "start_url": "https://seoft.com.br",
+  "theme_color": "#ffffff"
+}

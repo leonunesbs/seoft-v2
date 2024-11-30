@@ -1,9 +1,9 @@
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import { type DefaultSession, type NextAuthConfig } from "next-auth";
+import type { Provider } from "next-auth/providers";
 import GitHubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import ResendProvider from "next-auth/providers/resend";
-
 import { db } from "~/server/db";
 
 /**
@@ -27,6 +27,31 @@ declare module "next-auth" {
   // }
 }
 
+const providers: Provider[] = [
+  GitHubProvider({
+    allowDangerousEmailAccountLinking: true,
+  }),
+  GoogleProvider({
+    allowDangerousEmailAccountLinking: true,
+  }),
+  ResendProvider({
+    from: "no-reply@seoft.com.br",
+  }),
+];
+
+export const providerMap = providers
+  .map((provider) => {
+    if (typeof provider === "function") {
+      const providerData = provider();
+      return { id: providerData.id, name: providerData.name };
+    } else {
+      return { id: provider.id, name: provider.name };
+    }
+  })
+  .filter(
+    (provider) => provider.id !== "credentials" && provider.id !== "resend",
+  );
+
 /**
  * Options for NextAuth.js used to configure adapters, providers, callbacks, etc.
  *
@@ -34,15 +59,7 @@ declare module "next-auth" {
  */
 export const authConfig = {
   providers: [
-    GitHubProvider({
-      allowDangerousEmailAccountLinking: true,
-    }),
-    GoogleProvider({
-      allowDangerousEmailAccountLinking: true,
-    }),
-    ResendProvider({
-      from: "no-reply@seoft.com.br",
-    }),
+    ...providers,
     /**
      * ...add more providers here.
      *
