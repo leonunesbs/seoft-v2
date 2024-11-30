@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { type Patient } from "@prisma/client";
 
-describe("Test create patient POST API", async () => {
+describe("Test patient POST API", async () => {
   it("should return 200 if POST with valid body", async () => {
     const response: {
       status: number;
@@ -13,8 +13,8 @@ describe("Test create patient POST API", async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        refId: "998877",
-        name: "LEONARDO NUNES BEZERRA SOUZA",
+        refId: "555012337",
+        name: "john doe",
         birthDate: new Date("1998-02-12").toISOString(),
       }),
     });
@@ -23,8 +23,8 @@ describe("Test create patient POST API", async () => {
 
     const data = await response.json();
 
-    expect(data.refId).toEqual("998877");
-    expect(data.name).toEqual("LEONARDO NUNES BEZERRA SOUZA");
+    expect(data.refId).toEqual("555012337");
+    expect(data.name).toEqual("JOHN DOE");
     expect(data.birthDate).toEqual(new Date("1998-02-12").toISOString());
   });
 
@@ -32,14 +32,14 @@ describe("Test create patient POST API", async () => {
     const response: {
       status: number;
       json: () => Promise<Patient>;
-    } = await fetch("http://localhost:3000/api/v1/patients?refId=998877");
+    } = await fetch("http://localhost:3000/api/v1/patients?refId=555012337");
 
     expect(response.status).toEqual(200);
 
     const data = await response.json();
 
-    expect(data.refId).toEqual("998877");
-    expect(data.name).toEqual("LEONARDO NUNES BEZERRA SOUZA");
+    expect(data.refId).toEqual("555012337");
+    expect(data.name).toEqual("JOHN DOE");
     expect(data.birthDate).toEqual("12/02/1998");
   });
 });
@@ -55,20 +55,20 @@ describe("Test patient GET API", async () => {
     const data = await response.json();
     expect(data.length).toBeGreaterThanOrEqual(0);
 
-    const patient = data.find((p) => p.refId === "998877");
+    const patient = data.find((p) => p.refId === "555012337");
     expect(patient).toBeDefined();
-    expect(patient?.name).toEqual("LEONARDO NUNES BEZERRA SOUZA");
+    expect(patient?.name).toEqual("JOHN DOE");
   });
 
-  it("should return search by refId", async () => {
+  it("should return 200 when search by refId", async () => {
     const response: {
       status: number;
       json: () => Promise<Patient>;
-    } = await fetch("http://localhost:3000/api/v1/patients?refId=998877");
+    } = await fetch("http://localhost:3000/api/v1/patients?refId=555012337");
     expect(response.status).toEqual(200);
     const data = await response.json();
-    expect(data.refId).toEqual("998877");
-    expect(data.name).toEqual("LEONARDO NUNES BEZERRA SOUZA");
+    expect(data.refId).toEqual("555012337");
+    expect(data.name).toEqual("JOHN DOE");
   });
 });
 
@@ -88,7 +88,7 @@ describe("Test patient PATCH API", async () => {
       body: JSON.stringify({}),
     });
 
-    expect(response.status).toEqual(405);
+    expect(response.status).toEqual(400);
   });
 
   it("should return 404 if PATCH with invalid refId", async () => {
@@ -103,7 +103,7 @@ describe("Test patient PATCH API", async () => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        name: "LEONARDO NUNES BEZERRA SOUZA",
+        name: "john doe",
         birthDate: new Date("1998-02-12").toISOString(),
       }),
     });
@@ -115,7 +115,7 @@ describe("Test patient PATCH API", async () => {
     const response: {
       status: number;
       json: () => Promise<Patient>;
-    } = await fetch("http://localhost:3000/api/v1/patients?refId=998877", {
+    } = await fetch("http://localhost:3000/api/v1/patients?refId=555012337", {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -130,7 +130,7 @@ describe("Test patient PATCH API", async () => {
 
     const data = await response.json();
 
-    expect(data.refId).toEqual("998877");
+    expect(data.refId).toEqual("555012337");
     expect(data.name).toEqual("LEONARDO NUNES");
     expect(data.birthDate).toEqual("12/02/1998");
   });
@@ -167,7 +167,7 @@ describe("Test patient DELETE API", async () => {
     const response: {
       status: number;
       json: () => Promise<Patient>;
-    } = await fetch("http://localhost:3000/api/v1/patients?refId=998877", {
+    } = await fetch("http://localhost:3000/api/v1/patients?refId=555012337", {
       method: "DELETE",
     });
 
@@ -175,7 +175,7 @@ describe("Test patient DELETE API", async () => {
 
     const data = await response.json();
 
-    expect(data.refId).toEqual("998877");
+    expect(data.refId).toEqual("555012337");
     expect(data.name).toEqual("LEONARDO NUNES");
   });
 
@@ -185,7 +185,7 @@ describe("Test patient DELETE API", async () => {
       json: () => Promise<{
         name: string;
       }>;
-    } = await fetch("http://localhost:3000/api/v1/patients?refId=998877", {
+    } = await fetch("http://localhost:3000/api/v1/patients?refId=555012337", {
       method: "DELETE",
     });
 
