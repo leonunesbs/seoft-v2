@@ -2,7 +2,7 @@ import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
 
-const staffSchema = z.object({
+const residentSchema = z.object({
   id: z.string().optional(),
   name: z
     .string()
@@ -21,11 +21,11 @@ const staffSchema = z.object({
   clinics: z.array(z.string()).optional(),
 });
 
-export const staffRouter = createTRPCRouter({
+export const residentRouter = createTRPCRouter({
   create: publicProcedure
-    .input(staffSchema)
+    .input(residentSchema)
     .mutation(async ({ input, ctx }) => {
-      const staff = await ctx.db.collaborator.create({
+      const resident = await ctx.db.collaborator.create({
         data: {
           name: input.name,
           crm: input.crm,
@@ -42,51 +42,53 @@ export const staffRouter = createTRPCRouter({
       });
 
       return {
-        id: staff.id,
-        name: staff.name,
-        crm: staff.crm,
-        role: staff.role,
+        id: resident.id,
+        name: resident.name,
+        crm: resident.crm,
+        role: resident.role,
       };
     }),
   list: publicProcedure.query(async ({ ctx }) => {
-    const staff = await ctx.db.collaborator.findMany({
+    const residents = await ctx.db.collaborator.findMany({
       include: {
         clinics: true,
       },
       where: {
-        role: "STAFF",
+        role: {
+          in: ["R1", "R2", "R3", "F1", "F2", "F3"],
+        },
       },
     });
 
-    return staff.map((staff) => ({
-      id: staff.id,
-      name: staff.name,
-      crm: staff.crm,
-      role: staff.role,
-      clinics: staff.clinics.map((clinic) => clinic.clinicId),
+    return residents.map((resident) => ({
+      id: resident.id,
+      name: resident.name,
+      crm: resident.crm,
+      role: resident.role,
+      clinics: resident.clinics.map((clinic) => clinic.clinicId),
     }));
   }),
   get: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
-    const staff = await ctx.db.collaborator.findUnique({
+    const resident = await ctx.db.collaborator.findUnique({
       where: { id: input },
       include: {
         clinics: true,
       },
     });
 
-    if (!staff) {
+    if (!resident) {
       throw new Error("Staff not found");
     }
 
     return {
-      id: staff.id,
-      name: staff.name,
-      crm: staff.crm,
-      role: staff.role,
+      id: resident.id,
+      name: resident.name,
+      crm: resident.crm,
+      role: resident.role,
     };
   }),
   search: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
-    const staff = await ctx.db.collaborator.findMany({
+    const resident = await ctx.db.collaborator.findMany({
       where: {
         OR: [
           { name: { contains: input, mode: "insensitive" } },
@@ -95,17 +97,17 @@ export const staffRouter = createTRPCRouter({
       },
     });
 
-    return staff.map((staff) => ({
-      id: staff.id,
-      name: staff.name,
-      crm: staff.crm,
-      role: staff.role,
+    return resident.map((resident) => ({
+      id: resident.id,
+      name: resident.name,
+      crm: resident.crm,
+      role: resident.role,
     }));
   }),
   update: publicProcedure
-    .input(staffSchema)
+    .input(residentSchema)
     .mutation(async ({ input, ctx }) => {
-      const staff = await ctx.db.$transaction(async (tx) => {
+      const resident = await ctx.db.$transaction(async (tx) => {
         await tx.clinicCollaborator.deleteMany({
           where: { collaboratorId: input.id },
         });
@@ -126,22 +128,22 @@ export const staffRouter = createTRPCRouter({
       });
 
       return {
-        id: staff.id,
-        name: staff.name,
-        crm: staff.crm,
-        role: staff.role,
+        id: resident.id,
+        name: resident.name,
+        crm: resident.crm,
+        role: resident.role,
       };
     }),
   delete: publicProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    const staff = await ctx.db.collaborator.delete({
+    const resident = await ctx.db.collaborator.delete({
       where: { id: input },
     });
 
     return {
-      id: staff.id,
-      name: staff.name,
-      crm: staff.crm,
-      role: staff.role,
+      id: resident.id,
+      name: resident.name,
+      crm: resident.crm,
+      role: resident.role,
     };
   }),
 });
