@@ -92,7 +92,7 @@ export const GET = auth(async function GET(req) {
   }
 });
 
-export async function PATCH(req: NextRequest) {
+export async function PUT(req: NextRequest) {
   const searchParams = new URL(req.url).searchParams;
   const refId = searchParams.get("refId");
 
