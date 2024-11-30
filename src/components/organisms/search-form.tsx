@@ -4,13 +4,13 @@ import {
   SidebarInput,
 } from "~/components/ui/sidebar";
 
-import { Search } from "lucide-react";
 import Form from "next/form";
 import { Label } from "~/components/ui/label";
+import { Search } from "lucide-react";
 
 export function SearchForm({ ...props }: React.ComponentProps<"form">) {
   return (
-    <Form action={"/patient/search"} {...props}>
+    <Form action={"/patients/search"} {...props}>
       <SidebarGroup className="py-0">
         <SidebarGroupContent className="relative">
           <Label htmlFor="search" className="sr-only">

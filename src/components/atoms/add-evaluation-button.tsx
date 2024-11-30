@@ -1,9 +1,10 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { MdOutlineUploadFile } from "react-icons/md";
-import { toast } from "~/hooks/use-toast";
 import { Button } from "../ui/button";
+import { MdOutlineUploadFile } from "react-icons/md";
+import { api } from "~/trpc/react";
+import { useRouter } from "next/navigation";
+import { useToast } from "~/hooks/use-toast";
 
 export function AddEvaluationButton({
   patientId,
@@ -13,47 +14,69 @@ export function AddEvaluationButton({
   patientName: string;
 }) {
   const router = useRouter();
-  const handleAddEvaluation = async () => {
-    const collaboratorId = await fetch("/api/v1/collaborator-switcher")
-      .then((res) => res.json())
-      .then((data) => {
-        return data.collaboratorId;
+  const { toast } = useToast();
+
+  // Utiliza o tRPC para obter o colaborador atual
+  const { data: collaboratorData, isLoading: isCollaboratorLoading } =
+    api.utils.currentCollaborator.useQuery();
+
+  // Utiliza o tRPC para criar avaliação
+  const createEvaluation = api.evaluation.create.useMutation({
+    onSuccess(data) {
+      const message =
+        data.done === false
+          ? `Continuando avaliação de ${patientName}.`
+          : `Nova avaliação de ${patientName} criada.`;
+
+      toast({
+        title: "Sucesso!",
+        description: message,
+        variant: "default",
+        duration: 3000,
       });
-
-    const response = await fetch("/api/v1/evaluation", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ patientId, collaboratorId }),
-    });
-
-    if (response.ok) {
-      const data = await response.json();
-      if (response.status === 201) {
-        toast({
-          title: "Sucesso!",
-          description: `Nova avaliação de ${patientName} criada.`,
-          variant: "default",
-        });
-      } else if (response.status === 200) {
-        toast({
-          title: "Tudo certo!",
-          description: `Continuando avaliação de ${patientName}.`,
-          variant: "default",
-        });
-      }
 
       router.push(`/evaluation/${data.id}`);
-    } else {
+    },
+    onError(error) {
       toast({
         title: "Erro!",
-        description:
-          "Não foi possível criar uma nova avaliação, verifique a seleção do Colaborador no menu lateral.",
+        description: error.message || "Não foi possível criar a avaliação.",
         variant: "destructive",
+        duration: 3000,
       });
+    },
+  });
+
+  const handleAddEvaluation = async () => {
+    if (isCollaboratorLoading) {
+      toast({
+        title: "Carregando",
+        description:
+          "Aguarde enquanto carregamos as informações do colaborador.",
+        variant: "default",
+        duration: 3000,
+      });
+      return;
     }
+
+    const collaboratorId = collaboratorData?.collaboratorId;
+    if (!collaboratorId) {
+      toast({
+        title: "Erro!",
+        description: "Colaborador não selecionado. Verifique o menu lateral.",
+        variant: "destructive",
+        duration: 3000,
+      });
+      return;
+    }
+
+    // Chamada da mutação com os dados necessários
+    createEvaluation.mutate({
+      patientId,
+      collaboratorId,
+    });
   };
+
   return (
     <Button
       type="button"

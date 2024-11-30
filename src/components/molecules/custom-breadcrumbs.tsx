@@ -1,6 +1,5 @@
 "use client";
 
-import React, { useMemo } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -9,6 +8,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
+import React, { useMemo } from "react";
 
 import { usePathname } from "next/navigation";
 
@@ -34,8 +34,8 @@ const staticRoutes: BreadcrumbConfig[] = [
     label: "Pacientes",
     redirectUrl: "#",
     children: [
-      { path: "/patient/add", label: "Adicionar Paciente" },
-      { path: "/patient/search", label: "Buscar Paciente" },
+      { path: "/patients/add", label: "Adicionar Paciente" },
+      { path: "/patients/search", label: "Buscar Paciente" },
     ],
   },
 ];
@@ -43,7 +43,7 @@ const staticRoutes: BreadcrumbConfig[] = [
 // Configuração de rotas dinâmicas
 const dynamicRoutes: BreadcrumbConfig[] = [
   { path: "/evaluation/:id", label: "Detalhes da Avaliação" },
-  { path: "/patient/:id", label: "Detalhes do Paciente" },
+  { path: "/patients/:id", label: "Detalhes do Paciente" },
 ];
 
 // Função para mesclar rotas dinâmicas e estáticas

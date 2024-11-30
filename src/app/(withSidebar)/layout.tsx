@@ -16,7 +16,6 @@ import { Separator } from "~/components/ui/separator";
 import { ThemeToggle } from "~/components/atoms/theme-toggle";
 import { cookies } from "next/headers";
 import { db } from "~/server/db";
-import { redirect } from "next/navigation";
 
 export default async function Layout({
   children,
@@ -25,7 +24,7 @@ export default async function Layout({
 }) {
   const session = await auth();
   if (!session?.user) {
-    return redirect("/signin");
+    // return redirect("/signin");
   }
 
   const cookieStore = await cookies();

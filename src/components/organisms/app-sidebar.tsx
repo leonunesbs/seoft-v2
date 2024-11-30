@@ -60,7 +60,7 @@ export function AppSidebar({
         items: [
           {
             title: "Em andamento",
-            url: "/evaluation/pending",
+            url: "/evaluations/pending",
             icon: (
               <Badge
                 variant={
@@ -85,12 +85,12 @@ export function AppSidebar({
         items: [
           {
             title: "Buscar",
-            url: "/patient/search",
+            url: "/patients/search",
             icon: <MdOutlineSearch size={18} />,
           },
           {
             title: "Adicionar",
-            url: "/patient/add",
+            url: "/patients/add",
             icon: <MdOutlinePersonAdd size={18} />,
           },
         ],

@@ -1,21 +1,24 @@
-'use client';
+"use client";
 
-import { type ReactNode, useState } from 'react';
-import { MdOutlineLink } from 'react-icons/md';
+import { type ReactNode, useState } from "react";
+import { MdOutlineLink } from "react-icons/md";
 
-import { Button } from '../ui/button';
+import { Button } from "../ui/button";
 
 type AccessFileButtonProps = {
   fileName: string; // Nome do arquivo a ser acessado
   children: ReactNode;
 };
 
-export function AccessFileButton({ fileName, children }: AccessFileButtonProps) {
+export function AccessFileButton({
+  fileName,
+  children,
+}: AccessFileButtonProps) {
   const [loading, setLoading] = useState(false);
   console.log(fileName);
   const handleGenerateAndOpenUrl = async () => {
     if (!fileName || fileName.length < 20) {
-      console.error('O nome do arquivo não foi fornecido.');
+      console.error("O nome do arquivo não foi fornecido.");
       return;
     }
 
@@ -23,24 +26,28 @@ export function AccessFileButton({ fileName, children }: AccessFileButtonProps) 
 
     try {
       // Faz a requisição para obter a URL pré-assinada
-      const response = await fetch(`/api/s3?action=download&fileName=${encodeURIComponent(fileName)}`);
+      const response = await fetch(
+        `/api/s3?action=download&fileName=${encodeURIComponent(fileName)}`,
+      );
 
       if (!response.ok) {
         console.error(`Erro ao obter URL pré-assinada: ${response.statusText}`);
         return;
       }
 
-      const { downloadUrl } = await response.json();
+      const { downloadUrl } = (await response.json()) as {
+        downloadUrl: string;
+      };
 
       if (!downloadUrl) {
-        console.error('URL de download não foi retornada pela API.');
+        console.error("URL de download não foi retornada pela API.");
         return;
       }
 
       // Abre o documento em uma nova aba
-      window.open(downloadUrl, '_blank');
+      window.open(downloadUrl, "_blank");
     } catch (error) {
-      console.error('Erro ao gerar ou acessar o arquivo:', error);
+      console.error("Erro ao gerar ou acessar o arquivo:", error);
     } finally {
       setLoading(false);
     }
@@ -50,7 +57,7 @@ export function AccessFileButton({ fileName, children }: AccessFileButtonProps) 
     <Button
       type="button"
       size="sm"
-      value={'outline'}
+      value={"outline"}
       onClick={handleGenerateAndOpenUrl}
       disabled={loading}
       className="w-18"
