@@ -14,16 +14,165 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
+model Patient {
+    id        String   @id @default(cuid())
+    refId     String   @unique
     name      String
+    birthDate DateTime
+
+    createdAt   DateTime     @default(now())
+    updatedAt   DateTime     @updatedAt
+    evaluations Evaluation[]
+}
+
+model Clinic {
+    id            String               @id @default(cuid())
+    name          String
+    collaborators ClinicCollaborator[]
+    evaluations   Evaluation[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model Collaborator {
+    id          String               @id @default(cuid())
+    name        String
+    crm         String               @unique
+    role        Role
+    clinics     ClinicCollaborator[]
+    evaluations Evaluation[]
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+}
+
+model ClinicCollaborator {
+    clinicId       String
+    collaboratorId String
+
+    clinic       Clinic       @relation(fields: [clinicId], references: [id], onDelete: Cascade)
+    collaborator Collaborator @relation(fields: [collaboratorId], references: [id], onDelete: Cascade)
+
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    createdBy   User   @relation(fields: [createdById], references: [id])
-    createdById String
+    @@id([clinicId, collaboratorId])
+}
 
-    @@index([name])
+model Evaluation {
+    id              String  @id @default(uuid())
+    patientId       String
+    collaboratorId  String
+    done            Boolean @default(false)
+    clinicId        String?
+    clinicalData    String?
+    diagnosis       String?
+    treatment       String?
+    followUp        String?
+    nextAppointment String?
+    eyes            Eyes?
+
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+
+    patient      Patient      @relation(fields: [patientId], references: [id], onDelete: Cascade)
+    collaborator Collaborator @relation(fields: [collaboratorId], references: [id], onDelete: Cascade)
+    clinic       Clinic?      @relation(fields: [clinicId], references: [id], onDelete: SetNull)
+}
+
+model Eyes {
+    id           String @id @default(uuid())
+    evaluationId String @unique
+
+    rightEyeId String @unique
+    leftEyeId  String @unique
+    rightEye   Eye    @relation("RightEye", fields: [rightEyeId], references: [id], onDelete: Cascade)
+    leftEye    Eye    @relation("LeftEye", fields: [leftEyeId], references: [id], onDelete: Cascade)
+
+    evaluation Evaluation @relation(fields: [evaluationId], references: [id], onDelete: Cascade)
+}
+
+model Eye {
+    id         String       @id @default(uuid())
+    logs       EyeLog[]
+    refraction Refraction[]
+    surgeries  EyeSurgery[]
+    eyedrops   Eyedrop[]
+
+    rightEye Eyes? @relation("RightEye")
+    leftEye  Eyes? @relation("LeftEye")
+}
+
+model EyeLog {
+    id         String     @default(uuid())
+    type       EyeLogType
+    eyeId      String
+    details    String?
+    recordedAt DateTime   @default(now())
+    eye        Eye        @relation(fields: [eyeId], references: [id], onDelete: Cascade)
+
+    @@id([type, eyeId])
+}
+
+model Refraction {
+    id           String   @id @default(uuid())
+    eyeId        String
+    spherical    Float?
+    cylinder     Float?
+    axis         Float?
+    visualAcuity String?
+    recordedAt   DateTime @default(now())
+    eye          Eye      @relation(fields: [eyeId], references: [id], onDelete: Cascade)
+}
+
+model EyeSurgery {
+    id        String   @id @default(uuid())
+    eyeId     String
+    procedure String
+    date      DateTime
+    notes     String?
+    eye       Eye      @relation(fields: [eyeId], references: [id], onDelete: Cascade)
+}
+
+model Eyedrop {
+    id        String    @id @default(uuid())
+    eyeId     String
+    name      String
+    dosage    String?
+    startDate DateTime?
+    notes     String?
+    eye       Eye       @relation(fields: [eyeId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+    I1
+    I2
+    I3
+    I4
+    R1
+    R2
+    R3
+    F1
+    F2
+    F3
+    STAFF
+}
+
+enum EyeLogType {
+    BIOMICROSCOPY
+    PACHYMETRY
+    TONOMETRY
+    OCT
+    VISUAL_FIELD
+    FUNDOSCOPY
+    RETINOGRAPHY
+    GONIOSCOPY
+    ANGIOGRAPHY
+    CT_CORNEA
+    OTHER_1
+    OTHER_2
+    OTHER_3
 }
 
 // Necessary for Next auth
@@ -62,7 +211,6 @@ model User {
     image         String?
     accounts      Account[]
     sessions      Session[]
-    posts         Post[]
 }
 
 model VerificationToken {
