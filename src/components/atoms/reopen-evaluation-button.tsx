@@ -1,13 +1,12 @@
-// components/ReopenEvaluationButton.tsx
-
 "use client";
 
-import { type Prisma } from "@prisma/client/edge";
+import { type Prisma } from "@prisma/client";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import { MdEdit } from "react-icons/md";
 
 import { Button } from "~/components/ui/button";
+import { toast } from "~/hooks/use-toast";
+import { api } from "~/trpc/react";
 
 interface ReopenEvaluationButtonProps {
   evaluation: Prisma.EvaluationGetPayload<{
@@ -22,45 +21,42 @@ interface ReopenEvaluationButtonProps {
         };
       };
     };
-  }>; // Adjust the type as needed
+  }>;
 }
 
 export function ReopenEvaluationButton({
   evaluation,
 }: ReopenEvaluationButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
-  // Function to reopen the evaluation
-  const handleReopenEvaluation = async () => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(`/api/v1/evaluation`, {
-        method: "PUT",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          id: evaluation.id || undefined,
-          patientId: evaluation.patient.id,
-          collaboratorId: evaluation.collaborator.id,
-          clinicId: evaluation.clinic?.id,
-          rightEyeId: evaluation.eyes?.rightEyeId,
-          leftEyeId: evaluation.eyes?.leftEyeId,
-          done: false,
-        }),
+  const reopenEvaluation = api.evaluation.update.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "Avaliação reaberta",
+        description: "A avaliação foi reaberta com sucesso.",
+        variant: "default",
       });
-
-      if (!response.ok) throw new Error("Erro ao reabrir a avaliação.");
-
-      // Optionally refresh the page or redirect
       router.push(`/evaluations/${evaluation.id}`);
-    } catch (error) {
-      console.error("Erro ao reabrir a avaliação:", error);
-    } finally {
-      setIsLoading(false);
-    }
+    },
+    onError: () => {
+      toast({
+        title: "Erro",
+        description: "Erro ao reabrir a avaliação.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleReopenEvaluation = () => {
+    reopenEvaluation.mutate({
+      id: evaluation.id,
+      patientId: evaluation.patient.id,
+      collaboratorId: evaluation.collaborator.id,
+      clinicId: evaluation.clinic?.id ?? undefined,
+      rightEyeId: evaluation.eyes?.rightEyeId,
+      leftEyeId: evaluation.eyes?.leftEyeId,
+      done: false, // Marca a avaliação como "não concluída"
+    });
   };
 
   return (
@@ -68,11 +64,11 @@ export function ReopenEvaluationButton({
       type="button"
       onClick={handleReopenEvaluation}
       variant="outline"
-      disabled={isLoading}
+      disabled={reopenEvaluation.isPending}
     >
       <MdEdit size={18} />
       <span className="hidden sm:block">
-        {isLoading ? "Reabrindo..." : "Reabrir"}
+        {reopenEvaluation.isPending ? "Reabrindo..." : "Reabrir"}
       </span>
     </Button>
   );

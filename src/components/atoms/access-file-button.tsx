@@ -15,7 +15,6 @@ export function AccessFileButton({
   children,
 }: AccessFileButtonProps) {
   const [loading, setLoading] = useState(false);
-  console.log(fileName);
   const handleGenerateAndOpenUrl = async () => {
     if (!fileName || fileName.length < 20) {
       console.error("O nome do arquivo não foi fornecido.");

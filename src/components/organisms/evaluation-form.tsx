@@ -180,7 +180,6 @@ export function EvaluationForm({
   const isSubmitting = createEvaluation.isPending || updateEvaluation.isPending;
 
   const handleSubmitMainForm = (data: MainFormValues) => {
-    void identificationForm.handleSubmit(() => console.log())();
     const payload = {
       ...data,
       id: evaluation.id || undefined,
