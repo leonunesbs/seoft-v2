@@ -15,11 +15,12 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 
-import { AddEvaluationButton } from "~/components/atoms/add-evaluation-button";
-import { Button } from "~/components/ui/button";
-import { CollaboratorSwitcher } from "~/components/organisms/collaborator-switcher";
-import Link from "next/link";
 import { cookies } from "next/headers";
+import Link from "next/link";
+import { FaUserMd } from "react-icons/fa";
+import { AddEvaluationButton } from "~/components/atoms/add-evaluation-button";
+import { CollaboratorSwitcher } from "~/components/organisms/collaborator-switcher";
+import { Button } from "~/components/ui/button";
 import { db } from "~/server/db";
 
 export default async function EvaluationPending() {
@@ -42,15 +43,6 @@ export default async function EvaluationPending() {
     return <CollaboratorSwitcher collaborators={collaborators} />;
   }
 
-  const collaborator = await db.collaborator.findUnique({
-    where: {
-      id: collaboratorId,
-    },
-    select: {
-      name: true,
-    },
-  });
-
   const evaluations = await db.evaluation.findMany({
     where: {
       collaboratorId,
@@ -63,10 +55,20 @@ export default async function EvaluationPending() {
   });
 
   return (
-    <>
-      <span className="flex gap-1">
-        Colaborador: <h2>{collaborator?.name}</h2>
-      </span>
+    <div className="space-y-2">
+      <div className="flex gap-4">
+        <div className="flex aspect-square size-8 items-center justify-center rounded-lg border">
+          <FaUserMd />
+        </div>
+        <div className="flex w-full flex-col gap-0.5 leading-none">
+          <span className="font-semibold">SEOFT</span>
+          <span className="line-clamp-1">
+            {collaborators.find(
+              (collaborator) => collaborator.id === collaboratorId,
+            )?.name ?? "Selecione..."}
+          </span>
+        </div>
+      </div>
       <div className="overflow-x-auto rounded border">
         <Table className="w-full">
           <TableCaption>Resultados da busca de pacientes.</TableCaption>
@@ -157,6 +159,6 @@ export default async function EvaluationPending() {
           </TableBody>
         </Table>
       </div>
-    </>
+    </div>
   );
 }
