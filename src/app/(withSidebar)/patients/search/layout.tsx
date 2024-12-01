@@ -8,7 +8,7 @@ export default function SearchPatientLayout({
   return (
     <div className="flex flex-col gap-4">
       <PageHeading>Buscar Paciente</PageHeading>
-      <div className="px-2">{children}</div>
+      <div className="pl-2">{children}</div>
     </div>
   );
 }

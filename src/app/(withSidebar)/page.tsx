@@ -20,7 +20,7 @@ export default async function Dashboard() {
   const evaluationsCount = await db.evaluation.count();
 
   const recentEvaluations = await db.evaluation.findMany({
-    take: 5,
+    take: 10,
     orderBy: { createdAt: "desc" },
     include: {
       patient: { select: { name: true } },
@@ -33,7 +33,7 @@ export default async function Dashboard() {
     <HydrateClient>
       <div className="space-y-4 sm:space-y-6">
         {/* Estatísticas Resumidas */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6 md:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-4">
           <Card>
             <CardHeader>
               <CardTitle>

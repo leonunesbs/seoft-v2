@@ -168,7 +168,7 @@ export function EvaluationMainForm({
 
   return (
     <Form {...form}>
-      <form className="min-w-sm flex w-full flex-col gap-6">
+      <form className="min-w-xs flex w-full flex-col gap-6">
         {/* Dados Clínicos */}
         <FormField
           control={form.control}

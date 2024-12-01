@@ -458,7 +458,7 @@ export default async function EvaluationSummaryPage({
       </Card>
 
       {/* Dados dos Olhos, Acuidade Visual, Refração e Históricos de Cirurgias */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div className="flex flex-col gap-6">
         {/* Olho Direito */}
         <Card>
           <CardHeader>
