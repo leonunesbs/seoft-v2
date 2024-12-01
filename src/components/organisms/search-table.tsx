@@ -61,11 +61,7 @@ export function SearchTable({ data }: { data: Patient[] }) {
                 {new Date().getFullYear() -
                   new Date(patient.birthDate).getFullYear()}
               </TableCell>
-              <TableCell>
-                {new Date(patient.birthDate).toLocaleDateString("pt-BR", {
-                  timeZone: "UTC",
-                })}
-              </TableCell>
+              <TableCell>{patient.birthDate}</TableCell>
               <TableCell className="flex justify-end gap-2">
                 <TooltipProvider>
                   <Tooltip>

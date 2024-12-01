@@ -33,12 +33,12 @@ const routeConfig: RouteConfig[] = [
     redirectUrl: "/evaluation",
     children: [
       {
-        path: "/evaluation/pending",
+        path: "/evaluations/pending",
         label: () => "Avaliações Pendentes",
-        redirectUrl: "/evaluation/pending",
+        redirectUrl: "/evaluations/pending",
       },
       {
-        path: "/evaluation/:id",
+        path: "/evaluations/:id",
         label: () => `Detalhes da Avaliação`,
         redirectUrl: "/evaluation",
       },
@@ -85,6 +85,21 @@ const routeConfig: RouteConfig[] = [
         path: "/settings/staffs/:id",
         label: () => `Detalhes`,
         redirectUrl: "/settings/staffs",
+      },
+      {
+        path: "/settings/clinics",
+        label: () => "Ambulatórios",
+        redirectUrl: "/settings/clinics",
+      },
+      {
+        path: "/settings/clinics/add",
+        label: () => "Adicionar",
+        redirectUrl: "/settings/clinics/add",
+      },
+      {
+        path: "/settings/clinics/:id",
+        label: () => "Detalhes",
+        redirectUrl: "/settings/clinics",
       },
     ],
   },

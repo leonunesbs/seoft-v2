@@ -55,7 +55,7 @@ export function ReopenEvaluationButton({
       if (!response.ok) throw new Error("Erro ao reabrir a avaliação.");
 
       // Optionally refresh the page or redirect
-      router.push(`/evaluation/${evaluation.id}`);
+      router.push(`/evaluations/${evaluation.id}`);
     } catch (error) {
       console.error("Erro ao reabrir a avaliação:", error);
     } finally {

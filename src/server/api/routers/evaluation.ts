@@ -93,7 +93,6 @@ export const evaluationRouter = createTRPCRouter({
             create: { type: log.type, details: log.details ?? null }, // Substitui `undefined` por `null`
             update: { details: log.details ?? null },
           }));
-
       const leftEyeLogs = createLogs(input.leftEyeId!, [
         { type: "BIOMICROSCOPY", details: input.biomicroscopyOS },
         { type: "FUNDOSCOPY", details: input.fundoscopyOS },
@@ -120,13 +119,12 @@ export const evaluationRouter = createTRPCRouter({
         { type: "VISUAL_FIELD", details: input.visualFieldOD },
         { type: "PACHYMETRY", details: input.pachymetryOD },
       ]);
-
       return await ctx.db.evaluation.update({
         where: { id: input.id },
         data: {
           patientId: input.patientId,
           collaboratorId: input.collaboratorId,
-          clinicId: input.clinicId!,
+          clinicId: input.clinicId ?? undefined,
           clinicalData: input.clinicalData,
           diagnosis: input.diagnosis,
           treatment: input.treatment,
@@ -154,4 +152,9 @@ export const evaluationRouter = createTRPCRouter({
         },
       });
     }),
+  delete: publicProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
+    return await ctx.db.evaluation.delete({
+      where: { id: input },
+    });
+  }),
 });

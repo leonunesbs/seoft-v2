@@ -61,7 +61,7 @@ model ClinicCollaborator {
 }
 
 model Evaluation {
-    id              String  @id @default(uuid())
+    id              String  @id @default(cuid())
     patientId       String
     collaboratorId  String
     done            Boolean @default(false)
@@ -82,7 +82,7 @@ model Evaluation {
 }
 
 model Eyes {
-    id           String @id @default(uuid())
+    id           String @id @default(cuid())
     evaluationId String @unique
 
     rightEyeId String @unique
@@ -94,7 +94,7 @@ model Eyes {
 }
 
 model Eye {
-    id         String       @id @default(uuid())
+    id         String       @id @default(cuid())
     logs       EyeLog[]
     refraction Refraction[]
     surgeries  EyeSurgery[]
@@ -105,7 +105,7 @@ model Eye {
 }
 
 model EyeLog {
-    id         String     @default(uuid())
+    id         String     @default(cuid())
     type       EyeLogType
     eyeId      String
     details    String?
@@ -116,7 +116,7 @@ model EyeLog {
 }
 
 model Refraction {
-    id           String   @id @default(uuid())
+    id           String   @id @default(cuid())
     eyeId        String
     spherical    Float?
     cylinder     Float?
@@ -127,7 +127,7 @@ model Refraction {
 }
 
 model EyeSurgery {
-    id        String   @id @default(uuid())
+    id        String   @id @default(cuid())
     eyeId     String
     procedure String
     date      DateTime
@@ -136,7 +136,7 @@ model EyeSurgery {
 }
 
 model Eyedrop {
-    id        String    @id @default(uuid())
+    id        String    @id @default(cuid())
     eyeId     String
     name      String
     dosage    String?

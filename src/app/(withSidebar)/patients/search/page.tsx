@@ -19,7 +19,6 @@ export default async function SearchPatient({
 }) {
   const { q: queryString } = await searchParams;
   const patients = await api.patient.search(queryString as string);
-
   return (
     <div className="flex flex-col gap-4">
       <Form

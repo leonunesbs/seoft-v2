@@ -55,7 +55,14 @@ export const patientRouter = createTRPCRouter({
           data: {
             refId: input.refId,
             name: input.name,
-            birthDate: new Date(input.birthDate),
+            birthDate: new Date(
+              new Date(input.birthDate).toLocaleDateString("pt-br", {
+                year: "numeric",
+                month: "2-digit",
+                day: "2-digit",
+                timeZone: "UTC",
+              }),
+            ),
           },
         });
 

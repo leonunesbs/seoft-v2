@@ -53,8 +53,9 @@ export function CollaboratorSwitcher({
 
   const handleSelect = React.useCallback(
     async (collaborator: Collaborator) => {
+      if (collaborator.id === selectedCollaborator) return; // Impede clique no colaborador já selecionado
+
       setLoading(true);
-      if (collaborator.id === selectedCollaborator) return;
       await fetch("/api/v1/collaborator-switcher", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -125,7 +126,16 @@ export function CollaboratorSwitcher({
                     {group.collaborators.map((collaborator) => (
                       <DropdownMenuItem
                         key={collaborator.id}
-                        onSelect={() => handleSelect(collaborator)}
+                        onSelect={() =>
+                          collaborator.id !== selectedCollaborator &&
+                          handleSelect(collaborator)
+                        }
+                        disabled={collaborator.id === selectedCollaborator} // Desabilita seleção
+                        className={
+                          collaborator.id === selectedCollaborator
+                            ? "cursor-not-allowed opacity-50"
+                            : ""
+                        }
                       >
                         [{collaborator.crm}] {collaborator.name}{" "}
                         {collaborator.id === selectedCollaborator && (

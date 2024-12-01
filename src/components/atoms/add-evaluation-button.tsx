@@ -35,7 +35,7 @@ export function AddEvaluationButton({
         duration: 3000,
       });
 
-      router.push(`/evaluation/${data.id}`);
+      router.push(`/evaluations/${data.id}`);
     },
     onError(error) {
       toast({
