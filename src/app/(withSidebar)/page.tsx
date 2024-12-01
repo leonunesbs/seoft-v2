@@ -10,9 +10,8 @@ import {
   TableRow,
 } from "~/components/ui/table";
 
-import { HydrateClient } from "~/trpc/server";
-import { Loader2 } from "lucide-react";
 import { db } from "~/server/db";
+import { HydrateClient } from "~/trpc/server";
 
 export default async function Dashboard() {
   // Dados agregados para exibição
@@ -37,7 +36,6 @@ export default async function Dashboard() {
   return (
     <HydrateClient>
       <div className="space-y-4 sm:space-y-6">
-        <Loader2 className="animate-in" />
         {/* Estatísticas Resumidas */}
         <div className="grid grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-6 md:grid-cols-6">
           <Card>
