@@ -9,6 +9,7 @@ import { AppSidebar } from "~/components/organisms/app-sidebar";
 import { Button } from "~/components/ui/button";
 import { CustomBreadcrumbs } from "~/components/molecules/custom-breadcrumbs";
 import Form from "next/form";
+import { HydrateClient } from "~/trpc/server";
 import Image from "next/image";
 import Link from "next/link";
 import { MdLogout } from "react-icons/md";
@@ -73,7 +74,9 @@ export default async function Layout({
                 height={40}
               />
             </Link>
-            <CustomBreadcrumbs />
+            <HydrateClient>
+              <CustomBreadcrumbs />
+            </HydrateClient>
           </div>
           <div className="flex items-center gap-2">
             <ThemeToggle />

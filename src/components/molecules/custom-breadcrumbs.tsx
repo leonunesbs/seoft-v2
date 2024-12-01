@@ -28,18 +28,18 @@ const routeConfig: RouteConfig[] = [
     redirectUrl: "/",
   },
   {
-    path: "/evaluation",
-    label: () => "Avaliação",
-    redirectUrl: "/evaluation",
+    path: "/evaluations",
+    label: () => "Avaliações",
+    redirectUrl: "#",
     children: [
       {
         path: "/evaluations/pending",
-        label: () => "Avaliações Pendentes",
+        label: () => "Pendentes",
         redirectUrl: "/evaluations/pending",
       },
       {
         path: "/evaluations/:id",
-        label: () => `Detalhes da Avaliação`,
+        label: () => `Detalhes`,
         redirectUrl: "/evaluation",
       },
     ],

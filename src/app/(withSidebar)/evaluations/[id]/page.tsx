@@ -105,7 +105,7 @@ export default async function EvaluationPage({ params }: { params: Params }) {
 
   if (evaluation.done) redirect(`/evaluations/${id}/summary`);
   return (
-    <>
+    <div>
       <div className="flex justify-between">
         <PageHeading>Avaliação</PageHeading>
       </div>
@@ -124,6 +124,6 @@ export default async function EvaluationPage({ params }: { params: Params }) {
           },
         }))}
       />
-    </>
+    </div>
   );
 }
