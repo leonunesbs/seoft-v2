@@ -1,6 +1,6 @@
 "use client";
 
-import { type Prisma, type Refraction } from "@prisma/client";
+import { Prisma, Refraction } from "@prisma/client";
 import { MdCancel, MdOutlineFileCopy } from "react-icons/md";
 import {
   Select,
@@ -26,10 +26,12 @@ import {
 } from "../ui/form";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "~/hooks/use-toast";
+import { api } from "~/trpc/react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -102,17 +104,17 @@ type EvaluationRefractionFormProps = {
   };
 };
 
-type EyeRefractionListProps = {
-  eye: "OD" | "OE";
-  refractions: Refraction[];
-  onDelete: (id: string) => void;
-};
-
 function EyeRefractionList({
   eye,
   refractions,
   onDelete,
-}: EyeRefractionListProps) {
+  isLoading,
+}: {
+  eye: "OD" | "OE";
+  refractions: Refraction[];
+  onDelete: (id: string) => void;
+  isLoading: boolean;
+}) {
   return (
     <div className="flex w-full flex-col gap-1">
       <Badge className="mr-2 w-10">{eye}</Badge>
@@ -129,8 +131,13 @@ function EyeRefractionList({
             type="button"
             size="icon"
             onClick={() => onDelete(refraction.id)}
+            disabled={isLoading}
           >
-            <MdCancel />
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <MdCancel />
+            )}
           </Button>
         </div>
       ))}
@@ -149,9 +156,7 @@ export function EvaluationRefractionForm({
   rightEye,
   lastEyesData,
 }: EvaluationRefractionFormProps) {
-  const router = useRouter();
-
-  const form = useForm<RefractionFormValues>({
+  const form = useForm<z.infer<typeof refractionSchema>>({
     resolver: zodResolver(refractionSchema),
     defaultValues: {
       leftEyeId: leftEye?.id ?? "",
@@ -167,119 +172,116 @@ export function EvaluationRefractionForm({
     },
   });
 
-  const onSubmit = async (data: RefractionFormValues) => {
-    try {
-      const response = await fetch("/api/v1/evaluations/refraction", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          leftEyeId: data.leftEyeId,
-          rightEyeId: data.rightEyeId,
-          leftEyeData: {
-            spherical: data.sphericalOS ? parseFloat(data.sphericalOS) : null,
-            cylinder: data.cylinderOS ? parseFloat(data.cylinderOS) : null,
-            axis: data.axisOS ? parseFloat(data.axisOS) : null,
-            visualAcuity: data.visualAcuityOS,
-          },
-          rightEyeData: {
-            spherical: data.sphericalOD ? parseFloat(data.sphericalOD) : null,
-            cylinder: data.cylinderOD ? parseFloat(data.cylinderOD) : null,
-            axis: data.axisOD ? parseFloat(data.axisOD) : null,
-            visualAcuity: data.visualAcuityOD,
-          },
-        }),
-      });
+  const utils = api.useUtils();
+  const router = useRouter();
+  const { mutate: createRefraction, isPending: isCreatePending } =
+    api.refraction.create.useMutation({
+      onSuccess: () => {
+        toast({
+          title: "Refração salva!",
+          description: "A refração foi salva com sucesso.",
+        });
+        form.reset();
+        utils.refraction.get.invalidate();
+        router.refresh();
+      },
+      onError: () => {
+        toast({
+          title: "Erro ao salvar refração",
+          description: "Ocorreu um erro ao salvar a refração.",
+          variant: "destructive",
+        });
+      },
+    });
 
-      if (!response.ok) throw new Error();
+  const { mutate: deleteRefraction, isPending: isDeletePending } =
+    api.refraction.delete.useMutation({
+      onSuccess: () => {
+        toast({
+          title: "Refração deletada!",
+          description: "A refração foi deletada com sucesso.",
+        });
+        utils.refraction.get.invalidate();
+        router.refresh();
+      },
+      onError: () => {
+        toast({
+          title: "Erro ao deletar refração",
+          description: "Ocorreu um erro ao deletar a refração.",
+          variant: "destructive",
+        });
+      },
+    });
 
-      toast({
-        title: "Refração salva!",
-        description: "A refração foi salva com sucesso.",
-        variant: "default",
-        duration: 4000,
-      });
-      form.reset();
-      router.refresh();
-    } catch {
-      toast({
-        title: "Erro ao salvar refração",
-        description: "Ocorreu um erro ao salvar a refração.",
-        variant: "destructive",
-        duration: 4000,
-      });
-    }
+  const onSubmit = (data: RefractionFormValues) => {
+    createRefraction({
+      leftEyeId: data.leftEyeId!,
+      rightEyeId: data.rightEyeId!,
+      leftEyeData: {
+        spherical: data.sphericalOS ? parseFloat(data.sphericalOS) : null,
+        cylinder: data.cylinderOS ? parseFloat(data.cylinderOS) : null,
+        axis: data.axisOS ? parseFloat(data.axisOS) : null,
+        visualAcuity: data.visualAcuityOS,
+      },
+      rightEyeData: {
+        spherical: data.sphericalOD ? parseFloat(data.sphericalOD) : null,
+        cylinder: data.cylinderOD ? parseFloat(data.cylinderOD) : null,
+        axis: data.axisOD ? parseFloat(data.axisOD) : null,
+        visualAcuity: data.visualAcuityOD,
+      },
+    });
   };
 
-  const handleDelete = async (id: string) => {
-    try {
-      const response = await fetch(
-        `/api/v1/evaluations/refraction?refractionId=${id}`,
-        {
-          method: "DELETE",
-        },
-      );
+  const handleDelete = (id: string) => deleteRefraction(id);
 
-      if (!response.ok) throw new Error();
-
-      toast({
-        title: "Refração deletada!",
-        description: "A refração foi deletada com sucesso.",
-        variant: "default",
-        duration: 4000,
-      });
-      router.refresh();
-    } catch {
-      toast({
-        title: "Erro ao deletar refração",
-        description: "Ocorreu um erro ao deletar a refração.",
-        variant: "destructive",
-        duration: 4000,
-      });
-    }
-  };
-
-  const handleImportLastData = async () => {
+  const handleImportLastData = () => {
     if (!lastEyesData) {
       toast({
         title: "Erro",
         description:
           "Nenhum dado da última avaliação disponível para importar.",
         variant: "destructive",
-        duration: 4000,
       });
       return;
     }
+    form.setValue(
+      "sphericalOS",
+      lastEyesData.leftEye?.refraction[0]?.spherical?.toString() ?? "",
+    );
+    form.setValue(
+      "cylinderOS",
+      lastEyesData.leftEye?.refraction[0]?.cylinder?.toString() ?? "",
+    );
+    form.setValue(
+      "axisOS",
+      lastEyesData.leftEye?.refraction[0]?.axis?.toString() ?? "",
+    );
+    form.setValue(
+      "visualAcuityOS",
+      lastEyesData.leftEye?.refraction[0]?.visualAcuity ?? "",
+    );
 
-    try {
-      const response = await fetch("/api/v1/evaluations/refraction", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          leftEyeId: leftEye?.id,
-          rightEyeId: rightEye?.id,
-          leftEyeData: lastEyesData.leftEye?.refraction[0] ?? null,
-          rightEyeData: lastEyesData.rightEye?.refraction[0] ?? null,
-        }),
-      });
+    form.setValue(
+      "sphericalOD",
+      lastEyesData.rightEye?.refraction[0]?.spherical?.toString() ?? "",
+    );
+    form.setValue(
+      "cylinderOD",
+      lastEyesData.rightEye?.refraction[0]?.cylinder?.toString() ?? "",
+    );
+    form.setValue(
+      "axisOD",
+      lastEyesData.rightEye?.refraction[0]?.axis?.toString() ?? "",
+    );
+    form.setValue(
+      "visualAcuityOD",
+      lastEyesData.rightEye?.refraction[0]?.visualAcuity ?? "",
+    );
 
-      if (!response.ok) throw new Error();
-
-      toast({
-        title: "Dados importados!",
-        description:
-          "Os dados da última avaliação foram importados com sucesso.",
-        variant: "default",
-        duration: 4000,
-      });
-      router.refresh();
-    } catch {
-      toast({
-        title: "Erro ao importar dados",
-        description: "Não foi possível importar os dados da última avaliação.",
-        variant: "destructive",
-        duration: 4000,
-      });
-    }
+    toast({
+      title: "Dados importados!",
+      description: "Os dados da última avaliação foram importados com sucesso.",
+    });
   };
 
   return (
@@ -294,8 +296,13 @@ export function EvaluationRefractionForm({
                 type="button"
                 variant="outline"
                 onClick={handleImportLastData}
+                disabled={isCreatePending || isDeletePending}
               >
-                <MdOutlineFileCopy size={18} />
+                {isCreatePending || isDeletePending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <MdOutlineFileCopy size={18} />
+                )}
               </Button>
             </CardTitle>
           </CardHeader>
@@ -304,15 +311,16 @@ export function EvaluationRefractionForm({
               eye="OD"
               refractions={rightEye?.refraction ?? []}
               onDelete={handleDelete}
+              isLoading={isDeletePending}
             />
             <EyeRefractionList
               eye="OE"
               refractions={leftEye?.refraction ?? []}
               onDelete={handleDelete}
+              isLoading={isDeletePending}
             />
             <Separator />
             <div className="space-y-6">
-              {/* Campos para OD */}
               <div>
                 <div className="text-sm font-semibold">Olho Direito</div>
                 <div className="flex flex-wrap gap-4">
@@ -384,8 +392,6 @@ export function EvaluationRefractionForm({
                   />
                 </div>
               </div>
-
-              {/* Campos para OS */}
               <div>
                 <div className="text-sm font-semibold">Olho Esquerdo</div>
                 <div className="flex flex-wrap gap-4">
@@ -460,8 +466,12 @@ export function EvaluationRefractionForm({
             </div>
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">
-              Salvar Refração
+            <Button type="submit" className="w-full" disabled={isCreatePending}>
+              {isCreatePending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Salvar Refração"
+              )}
             </Button>
           </CardFooter>
         </Card>

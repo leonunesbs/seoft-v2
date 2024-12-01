@@ -3,6 +3,7 @@ import { createCallerFactory, createTRPCRouter } from "../../server/api/trpc";
 import { clinicRouter } from "./routers/clinic";
 import { evaluationRouter } from "./routers/evaluation";
 import { patientRouter } from "./routers/patient";
+import { refractionRouter } from "./routers/refraction";
 import { residentRouter } from "./routers/resident";
 import { staffRouter } from "./routers/staff";
 import { userRouter } from "./routers/users";
@@ -21,6 +22,7 @@ export const appRouter = createTRPCRouter({
   evaluation: evaluationRouter,
   utils: utilsRouter,
   user: userRouter,
+  refraction: refractionRouter,
 });
 
 // export type definition of API
