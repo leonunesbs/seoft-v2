@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 import { z } from "zod";
 
@@ -10,21 +10,23 @@ const userSchema = z.object({
 });
 
 export const userRouter = createTRPCRouter({
-  update: publicProcedure.input(userSchema).mutation(async ({ input, ctx }) => {
-    const user = await ctx.db.user.update({
-      where: { id: input.id },
-      data: {
-        name: input.name,
-        email: input.email,
-        isStaff: input.isStaff,
-      },
-    });
+  update: protectedProcedure
+    .input(userSchema)
+    .mutation(async ({ input, ctx }) => {
+      const user = await ctx.db.user.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          email: input.email,
+          isStaff: input.isStaff,
+        },
+      });
 
-    return {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      isStaff: user.isStaff,
-    };
-  }),
+      return {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        isStaff: user.isStaff,
+      };
+    }),
 });

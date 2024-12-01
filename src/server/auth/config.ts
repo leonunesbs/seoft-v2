@@ -16,15 +16,15 @@ declare module "next-auth" {
   interface Session extends DefaultSession {
     user: {
       id: string;
+      isStaff?: boolean;
       // ...other properties
       // role: UserRole;
     } & DefaultSession["user"];
   }
 
-  // interface User {
-  //   // ...other properties
-  //   // role: UserRole;
-  // }
+  interface User {
+    isStaff?: boolean;
+  }
 }
 
 const providers: Provider[] = [
@@ -77,6 +77,7 @@ export const authConfig = {
       user: {
         ...session.user,
         id: user.id,
+        isStaff: user.isStaff,
       },
     }),
   },

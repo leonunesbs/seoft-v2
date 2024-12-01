@@ -26,7 +26,7 @@ export function AddEvaluationButton({
 
   const createEvaluation = api.evaluation.create.useMutation({
     async onSuccess(data) {
-      const message = data.done
+      const message = !data.clinicalData
         ? `Nova avaliação de ${patientName} criada.`
         : `Continuando avaliação de ${patientName}.`;
       toast({

@@ -1,10 +1,10 @@
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 export const patientRouter = createTRPCRouter({
-  list: publicProcedure.query(async ({ ctx }) => {
+  list: protectedProcedure.query(async ({ ctx }) => {
     try {
       const patients = await ctx.db.patient.findMany({
         take: 10,
@@ -25,7 +25,7 @@ export const patientRouter = createTRPCRouter({
     }
   }),
 
-  create: publicProcedure
+  create: protectedProcedure
     .input(
       z.object({
         refId: z.string(),
@@ -69,7 +69,7 @@ export const patientRouter = createTRPCRouter({
       }
     }),
 
-  get: publicProcedure
+  get: protectedProcedure
     .input(
       z.object({
         refId: z.string(),
@@ -103,7 +103,7 @@ export const patientRouter = createTRPCRouter({
       }
     }),
 
-  search: publicProcedure
+  search: protectedProcedure
     .input(z.string().optional())
     .query(async ({ input, ctx }) => {
       try {
@@ -143,7 +143,7 @@ export const patientRouter = createTRPCRouter({
       }
     }),
 
-  update: publicProcedure
+  update: protectedProcedure
     .input(
       z.object({
         id: z.string(),
@@ -176,24 +176,26 @@ export const patientRouter = createTRPCRouter({
       }
     }),
 
-  delete: publicProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    try {
-      const patient = await ctx.db.patient.delete({
-        where: { id: input },
-      });
+  delete: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const patient = await ctx.db.patient.delete({
+          where: { id: input },
+        });
 
-      return {
-        refId: patient.refId,
-        name: patient.name,
-        birthDate: patient.birthDate.toISOString(),
-      };
-    } catch (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message:
-          "Erro ao excluir paciente. Verifique os dados e tente novamente.",
-        cause: error,
-      });
-    }
-  }),
+        return {
+          refId: patient.refId,
+          name: patient.name,
+          birthDate: patient.birthDate.toISOString(),
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message:
+            "Erro ao excluir paciente. Verifique os dados e tente novamente.",
+          cause: error,
+        });
+      }
+    }),
 });

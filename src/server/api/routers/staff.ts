@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
 
@@ -22,7 +22,7 @@ const staffSchema = z.object({
 });
 
 export const staffRouter = createTRPCRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(staffSchema)
     .mutation(async ({ input, ctx }) => {
       const staff = await ctx.db.collaborator.create({
@@ -48,7 +48,7 @@ export const staffRouter = createTRPCRouter({
         role: staff.role,
       };
     }),
-  list: publicProcedure.query(async ({ ctx }) => {
+  list: protectedProcedure.query(async ({ ctx }) => {
     const staff = await ctx.db.collaborator.findMany({
       include: {
         clinics: true,
@@ -66,7 +66,7 @@ export const staffRouter = createTRPCRouter({
       clinics: staff.clinics.map((clinic) => clinic.clinicId),
     }));
   }),
-  get: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
+  get: protectedProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const staff = await ctx.db.collaborator.findUnique({
       where: { id: input },
       include: {
@@ -85,7 +85,7 @@ export const staffRouter = createTRPCRouter({
       role: staff.role,
     };
   }),
-  search: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
+  search: protectedProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const staff = await ctx.db.collaborator.findMany({
       where: {
         OR: [
@@ -102,7 +102,7 @@ export const staffRouter = createTRPCRouter({
       role: staff.role,
     }));
   }),
-  update: publicProcedure
+  update: protectedProcedure
     .input(staffSchema)
     .mutation(async ({ input, ctx }) => {
       const staff = await ctx.db.$transaction(async (tx) => {
@@ -132,16 +132,18 @@ export const staffRouter = createTRPCRouter({
         role: staff.role,
       };
     }),
-  delete: publicProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    const staff = await ctx.db.collaborator.delete({
-      where: { id: input },
-    });
+  delete: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      const staff = await ctx.db.collaborator.delete({
+        where: { id: input },
+      });
 
-    return {
-      id: staff.id,
-      name: staff.name,
-      crm: staff.crm,
-      role: staff.role,
-    };
-  }),
+      return {
+        id: staff.id,
+        name: staff.name,
+        crm: staff.crm,
+        role: staff.role,
+      };
+    }),
 });

@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, protectedProcedure } from "~/server/api/trpc";
 
 import { z } from "zod";
 
@@ -22,7 +22,7 @@ const residentSchema = z.object({
 });
 
 export const residentRouter = createTRPCRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(residentSchema)
     .mutation(async ({ input, ctx }) => {
       const resident = await ctx.db.collaborator.create({
@@ -48,7 +48,7 @@ export const residentRouter = createTRPCRouter({
         role: resident.role,
       };
     }),
-  list: publicProcedure.query(async ({ ctx }) => {
+  list: protectedProcedure.query(async ({ ctx }) => {
     const residents = await ctx.db.collaborator.findMany({
       include: {
         clinics: true,
@@ -68,7 +68,7 @@ export const residentRouter = createTRPCRouter({
       clinics: resident.clinics.map((clinic) => clinic.clinicId),
     }));
   }),
-  get: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
+  get: protectedProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const resident = await ctx.db.collaborator.findUnique({
       where: { id: input },
       include: {
@@ -87,7 +87,7 @@ export const residentRouter = createTRPCRouter({
       role: resident.role,
     };
   }),
-  search: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
+  search: protectedProcedure.input(z.string()).query(async ({ input, ctx }) => {
     const resident = await ctx.db.collaborator.findMany({
       where: {
         OR: [
@@ -104,7 +104,7 @@ export const residentRouter = createTRPCRouter({
       role: resident.role,
     }));
   }),
-  update: publicProcedure
+  update: protectedProcedure
     .input(residentSchema)
     .mutation(async ({ input, ctx }) => {
       const resident = await ctx.db.$transaction(async (tx) => {
@@ -134,16 +134,18 @@ export const residentRouter = createTRPCRouter({
         role: resident.role,
       };
     }),
-  delete: publicProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    const resident = await ctx.db.collaborator.delete({
-      where: { id: input },
-    });
+  delete: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      const resident = await ctx.db.collaborator.delete({
+        where: { id: input },
+      });
 
-    return {
-      id: resident.id,
-      name: resident.name,
-      crm: resident.crm,
-      role: resident.role,
-    };
-  }),
+      return {
+        id: resident.id,
+        name: resident.name,
+        crm: resident.crm,
+        role: resident.role,
+      };
+    }),
 });

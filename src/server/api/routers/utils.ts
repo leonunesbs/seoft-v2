@@ -1,16 +1,16 @@
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 import { cookies } from "next/headers";
 import { z } from "zod";
 
 export const utilsRouter = createTRPCRouter({
-  currentCollaborator: publicProcedure.query(async ({}) => {
+  currentCollaborator: protectedProcedure.query(async ({}) => {
     const cookieStore = await cookies();
     const collaboratorId =
       cookieStore.get("selected-collaborator")?.value ?? null;
     return { collaboratorId };
   }),
-  selectCollaborator: publicProcedure
+  selectCollaborator: protectedProcedure
     .input(z.string())
     .mutation(async ({ input }) => {
       const cookieStore = await cookies();

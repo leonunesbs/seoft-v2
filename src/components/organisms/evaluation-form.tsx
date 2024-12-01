@@ -175,6 +175,15 @@ export function EvaluationForm({
   const isSubmitting = updateEvaluation.isPending;
 
   const handleSubmitMainForm = (data: MainFormValues, done = false) => {
+    if (identificationForm.getValues("clinic") === "") {
+      toast({
+        title: "Erro!",
+        description: "Selecione um ambulatório.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     const payload = {
       ...data,
       done,

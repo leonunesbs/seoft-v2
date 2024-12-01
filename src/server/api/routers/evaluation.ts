@@ -1,4 +1,4 @@
-import { createTRPCRouter, publicProcedure } from "../trpc";
+import { createTRPCRouter, protectedProcedure } from "../trpc";
 
 import { type EyeLogType } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
@@ -47,7 +47,7 @@ const evaluationSchema = z.object({
 });
 
 export const evaluationRouter = createTRPCRouter({
-  create: publicProcedure
+  create: protectedProcedure
     .input(evaluationSchema)
     .mutation(async ({ input, ctx }) => {
       try {
@@ -89,7 +89,7 @@ export const evaluationRouter = createTRPCRouter({
         });
       }
     }),
-  update: publicProcedure
+  update: protectedProcedure
     .input(evaluationSchema)
     .mutation(async ({ input, ctx }) => {
       // Função para criar os logs filtrados
@@ -163,12 +163,14 @@ export const evaluationRouter = createTRPCRouter({
         },
       });
     }),
-  delete: publicProcedure.input(z.string()).mutation(async ({ input, ctx }) => {
-    return await ctx.db.evaluation.delete({
-      where: { id: input },
-    });
-  }),
-  pendingEvaluations: publicProcedure
+  delete: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.db.evaluation.delete({
+        where: { id: input },
+      });
+    }),
+  pendingEvaluations: protectedProcedure
     .input(z.string().optional())
     .query(async ({ input, ctx }) => {
       const collaboratorId = input;
