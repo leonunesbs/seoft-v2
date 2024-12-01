@@ -9,6 +9,7 @@ import Form from "next/form";
 import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { MdLogout } from "react-icons/md";
 import { ThemeToggle } from "~/components/atoms/theme-toggle";
 import { CustomBreadcrumbs } from "~/components/molecules/custom-breadcrumbs";
@@ -24,7 +25,7 @@ export default async function Layout({
 }) {
   const session = await auth();
   if (!session?.user) {
-    // return redirect("/signin");
+    return redirect("/signin");
   }
 
   const cookieStore = await cookies();
