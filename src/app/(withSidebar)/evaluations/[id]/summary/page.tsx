@@ -170,7 +170,7 @@ export default async function EvaluationSummaryPage({
     // Função para formatar data
     const formatDate = (date: Date | string | null | undefined) => {
       if (!date) return "";
-      return new Date(date).toLocaleDateString();
+      return new Date(date).toLocaleDateString("pt-BR");
     };
 
     // Função para ocultar informações pessoais
@@ -426,7 +426,7 @@ export default async function EvaluationSummaryPage({
           <p>
             <strong>Data:</strong>{" "}
             {evaluation.createdAt
-              ? new Date(evaluation.createdAt).toLocaleDateString()
+              ? new Date(evaluation.createdAt).toLocaleDateString("pt-BR")
               : "N/A"}
           </p>
           <p>
@@ -531,7 +531,7 @@ export default async function EvaluationSummaryPage({
                         <TableCell>{surgery.procedure || "N/A"}</TableCell>
                         <TableCell>
                           {surgery.date
-                            ? new Date(surgery.date).toLocaleDateString()
+                            ? new Date(surgery.date).toLocaleDateString("pt-BR")
                             : "N/A"}
                         </TableCell>
                         <TableCell>{surgery.notes ?? "N/A"}</TableCell>
@@ -619,7 +619,7 @@ export default async function EvaluationSummaryPage({
                         <TableCell>{surgery.procedure || "N/A"}</TableCell>
                         <TableCell>
                           {surgery.date
-                            ? new Date(surgery.date).toLocaleDateString()
+                            ? new Date(surgery.date).toLocaleDateString("pt-BR")
                             : "N/A"}
                         </TableCell>
                         <TableCell>{surgery.notes ?? "N/A"}</TableCell>
@@ -657,7 +657,9 @@ export default async function EvaluationSummaryPage({
                   <TableRow key={index}>
                     <TableCell>
                       {evalData.createdAt
-                        ? new Date(evalData.createdAt).toLocaleDateString()
+                        ? new Date(evalData.createdAt).toLocaleDateString(
+                            "pt-BR",
+                          )
                         : "N/A"}
                     </TableCell>
                     <TableCell>{evalData.diagnosis ?? "N/A"}</TableCell>
