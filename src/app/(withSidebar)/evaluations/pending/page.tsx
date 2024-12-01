@@ -13,7 +13,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@radix-ui/react-tooltip";
+} from "~/components/ui/tooltip";
 
 import { AddEvaluationButton } from "~/components/atoms/add-evaluation-button";
 import { Button } from "~/components/ui/button";
@@ -134,7 +134,7 @@ export default async function EvaluationPending() {
                           aria-label={`Editar ${patient.name}`}
                           asChild
                         >
-                          <Link href={`/patient/${patient.refId}`}>
+                          <Link href={`/patients/${patient.refId}`}>
                             <MdEdit size={18} />
                           </Link>
                         </Button>
