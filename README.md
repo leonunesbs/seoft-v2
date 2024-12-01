@@ -1,29 +1,74 @@
-# Create T3 App
+# Projeto SEOFT
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+Este repositório contém o projeto **SEOFT**, desenvolvido com a T3 Stack, utilizando Next.js, TypeScript, Tailwind CSS, tRPC e Prisma.
 
-## What's next? How do I make an app with this?
+## Sobre a Plataforma
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+A plataforma **SEOFT** não é um prontuário digital. Ela atua como um intermediador, organizando e armazenando algumas informações do atendimento dos pacientes para facilitar a dinâmica dos atendimentos no dia a dia. Com um design focado na eficiência e simplicidade, o SEOFT auxilia os colaboradores a acessarem e registrarem informações de maneira mais prática e ágil.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+O acesso à plataforma é **restrito aos colaboradores do SEOFT**, garantindo a segurança das informações e o uso exclusivo por pessoas autorizadas.
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Estrutura do Projeto
 
-## Learn More
+A estrutura de diretórios do projeto é organizada da seguinte forma:
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+- **.github/workflows/**: Configurações para integração contínua e automações do GitHub Actions.
+- **.husky/**: Hooks do Git para garantir a qualidade do código antes de commits e push.
+- **prisma/**: Esquemas e migrações do banco de dados gerenciados pelo Prisma.
+- **public/**: Arquivos estáticos acessíveis publicamente, como imagens e fontes.
+- **src/**: Código-fonte principal da aplicação, incluindo páginas, componentes e estilos.
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+## Tecnologias Utilizadas
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+- **Next.js**: Framework React para renderização híbrida e geração de sites estáticos.
+- **TypeScript**: Superset do JavaScript que adiciona tipagem estática ao código.
+- **Tailwind CSS**: Framework CSS utilitário para estilização rápida e eficiente.
+- **tRPC**: Facilita a criação de APIs type-safe com TypeScript.
+- **Prisma**: ORM para interação com o banco de dados de forma segura e eficiente.
 
-## How do I deploy this?
+## Configuração e Instalação
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+1. **Clone o repositório**:
+
+   ```bash
+   git clone https://github.com/leonunesbs/seoft.git
+   ```
+
+2. **Instale as dependências**:
+
+   ```bash
+   pnpm install
+   ```
+
+3. **Configure as variáveis de ambiente**:
+
+   Renomeie o arquivo `.env.example` para `.env` e ajuste as variáveis conforme necessário.
+
+4. **Execute o projeto**:
+
+   ```bash
+   pnpm dev
+   ```
+
+   A aplicação estará disponível em `http://localhost:3000`.
+
+## Scripts Disponíveis
+
+- `pnpm dev`: Inicia o servidor de desenvolvimento.
+- `pnpm build`: Compila a aplicação para produção.
+- `pnpm start`: Inicia o servidor em modo de produção.
+- `pnpm lint`: Executa o linter para verificar a qualidade do código.
+
+## Contribuição
+
+Contribuições são bem-vindas! Siga os passos abaixo para contribuir:
+
+1. **Fork o repositório**.
+2. **Crie uma nova branch**: `git checkout -b minha-feature`.
+3. **Faça as alterações desejadas** e commit: `git commit -m 'Minha nova feature'`.
+4. **Envie para o repositório remoto**: `git push origin minha-feature`.
+5. **Abra um Pull Request** para revisão.
+
+## Licença
+
+Este projeto está licenciado sob a Licença MIT. Consulte o arquivo `LICENSE` para mais detalhes.
