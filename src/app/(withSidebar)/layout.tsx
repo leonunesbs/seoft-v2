@@ -27,8 +27,6 @@ export default async function Layout({
   if (!session?.user) {
     return redirect("/signin");
   }
-  console.log(session?.user.isStaff);
-
   const cookieStore = await cookies();
   const collaboratorId =
     cookieStore.get("selected-collaborator")?.value ?? null;
