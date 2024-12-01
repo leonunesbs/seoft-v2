@@ -18,13 +18,14 @@ import {
 
 import { useRouter } from "next/navigation";
 import { FaUserMd } from "react-icons/fa";
-import { api } from "~/trpc/react";
 import { Skeleton } from "../ui/skeleton";
 
 export function CollaboratorSwitcher({
   collaborators,
+  defaultVersion,
 }: {
   collaborators: Collaborator[];
+  defaultVersion?: string;
 }) {
   const router = useRouter();
   const [selectedCollaborator, setSelectedCollaborator] = React.useState<
@@ -67,13 +68,16 @@ export function CollaboratorSwitcher({
     [router, selectedCollaborator],
   );
 
-  const { data } = api.utils.currentCollaborator.useQuery();
   React.useEffect(() => {
-    if (data) {
-      setSelectedCollaborator(data.collaboratorId!);
-      setLoading(false);
-    }
-  }, [data]);
+    void fetch("/api/v1/collaborator-switcher")
+      .then((res) => res.json())
+      .then((data: { collaboratorId?: string }) => {
+        if (data.collaboratorId) {
+          setSelectedCollaborator(data.collaboratorId);
+        }
+      })
+      .finally(() => setLoading(false));
+  }, [defaultVersion, handleSelect]);
 
   return (
     <SidebarMenu>
@@ -84,7 +88,7 @@ export function CollaboratorSwitcher({
               size="lg"
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
-              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+              <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <FaUserMd />
               </div>
               <div className="flex w-full flex-col gap-0.5 leading-none">

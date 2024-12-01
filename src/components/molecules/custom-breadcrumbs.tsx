@@ -51,18 +51,40 @@ const routeConfig: RouteConfig[] = [
     children: [
       {
         path: "/patients/add",
-        label: () => "Adicionar Paciente",
+        label: () => "Adicionar",
         redirectUrl: "/patients/add",
       },
       {
         path: "/patients/search",
-        label: () => "Buscar Paciente",
+        label: () => "Buscar",
         redirectUrl: "/patients/search",
       },
       {
         path: "/patients/:id",
-        label: () => `Detalhes do Paciente`,
+        label: () => `Detalhes`,
         redirectUrl: "/patients",
+      },
+    ],
+  },
+  {
+    path: "/settings",
+    label: () => "Ajustes",
+    redirectUrl: "#",
+    children: [
+      {
+        path: "/settings/staffs",
+        label: () => "Staffs",
+        redirectUrl: "/settings/staffs",
+      },
+      {
+        path: "/settings/staffs/add",
+        label: () => "Adicionar",
+        redirectUrl: "/settings/staffs/add",
+      },
+      {
+        path: "/settings/staffs/:id",
+        label: () => `Detalhes`,
+        redirectUrl: "/settings/staffs",
       },
     ],
   },
@@ -132,7 +154,7 @@ export function CustomBreadcrumbs() {
           const isLast = index === breadcrumbs.length - 1;
 
           return (
-            <React.Fragment key={breadcrumb.href}>
+            <React.Fragment key={breadcrumb.label}>
               <BreadcrumbItem>
                 {isLast ? (
                   <BreadcrumbPage aria-current="page">

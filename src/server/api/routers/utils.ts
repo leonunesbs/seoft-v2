@@ -12,10 +12,11 @@ export const utilsRouter = createTRPCRouter({
   }),
   selectCollaborator: publicProcedure
     .input(z.string())
-    .query(async ({ input }) => {
+    .mutation(async ({ input }) => {
       const cookieStore = await cookies();
-      cookieStore.set("selected-collaborator", input, {
+      cookieStore.set("switcher:selected-collaborator", input, {
         maxAge: 60 * 60 * 24 * 7, // 1 week
+        path: "/",
       });
       return { collaboratorId: input };
     }),

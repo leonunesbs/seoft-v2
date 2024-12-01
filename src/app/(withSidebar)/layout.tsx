@@ -12,7 +12,6 @@ import Form from "next/form";
 import Image from "next/image";
 import Link from "next/link";
 import { MdLogout } from "react-icons/md";
-import { Separator } from "~/components/ui/separator";
 import { ThemeToggle } from "~/components/atoms/theme-toggle";
 import { cookies } from "next/headers";
 import { db } from "~/server/db";
@@ -63,7 +62,7 @@ export default async function Layout({
             <Link
               href={"/"}
               className={
-                "relative mx-1 flex h-8 w-8 shrink-0 overflow-hidden rounded-full"
+                "relative ml-1 mr-3 flex h-8 w-8 shrink-0 overflow-hidden rounded-full"
               }
             >
               <Image
@@ -74,7 +73,6 @@ export default async function Layout({
                 height={40}
               />
             </Link>
-            <Separator orientation="vertical" className="mr-2 h-4" />
             <CustomBreadcrumbs />
           </div>
           <div className="flex items-center gap-2">
