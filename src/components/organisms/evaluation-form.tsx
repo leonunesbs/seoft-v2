@@ -338,7 +338,7 @@ export function EvaluationForm({
           leftEyeId={evaluation.eyes?.leftEyeId}
           rightEyeId={evaluation.eyes?.rightEyeId}
         />
-        <div className="flex w-full max-w-xs flex-col space-y-4 text-sm">
+        <div className="flex w-full flex-col space-y-4 text-sm sm:max-w-xs">
           <EvaluationRefractionForm
             leftEye={evaluation.eyes?.leftEye}
             rightEye={evaluation.eyes?.rightEye}
