@@ -37,12 +37,21 @@ const mainFormSchema = z.object({
   tonometryOS: z.string().optional(),
   pachymetryOD: z.string().optional(),
   pachymetryOS: z.string().optional(),
+  octOD: z.any().optional(),
+  octOS: z.any().optional(),
+  ctCorneaOD: z.any().optional(),
+  ctCorneaOS: z.any().optional(),
+  angiographyOD: z.any().optional(),
+  angiographyOS: z.any().optional(),
+  visualFieldOD: z.any().optional(),
+  visualFieldOS: z.any().optional(),
+  retinographyOD: z.any().optional(),
+  retinographyOS: z.any().optional(),
   clinicalData: z.string().min(1, "Dados clínicos são obrigatórios."),
   diagnosis: z.string().optional(),
   treatment: z.string().optional(),
   followUp: z.string().optional(),
   nextAppointment: z.string().optional(),
-  done: z.boolean().optional(),
 });
 
 type IdentificationFormValues = z.infer<typeof identificationSchema>;
@@ -129,9 +138,82 @@ export function EvaluationForm({
     },
   });
 
+  const emptyBiomicroscopy =
+    "Pálpebras: \nConjuntiva: \nCórnea: \nCâmara anterior: \nÍris: \nCristalino: \nVítreo: \n";
+  const emptyFundoscopy =
+    "Retina: \nNervo: \nEscavação: \nMácula: \nVasos: \nPeriferia: \n";
+  const emptyGonioscopy = "Superior: \nInferior: \nNasal: \nTemporal: \n";
+
   const mainForm = useForm<MainFormValues>({
     resolver: zodResolver(mainFormSchema),
     defaultValues: {
+      biomicroscopyOD:
+        evaluation.eyes?.rightEye?.logs.find(
+          (log) => log.type === "BIOMICROSCOPY",
+        )?.details ?? emptyBiomicroscopy,
+      biomicroscopyOS:
+        evaluation.eyes?.leftEye?.logs.find(
+          (log) => log.type === "BIOMICROSCOPY",
+        )?.details ?? "",
+      fundoscopyOD:
+        evaluation.eyes?.rightEye?.logs.find((log) => log.type === "FUNDOSCOPY")
+          ?.details ?? emptyFundoscopy,
+      fundoscopyOS:
+        evaluation.eyes?.leftEye?.logs.find((log) => log.type === "FUNDOSCOPY")
+          ?.details ?? "",
+      gonioscopyOD:
+        evaluation.eyes?.rightEye?.logs.find((log) => log.type === "GONIOSCOPY")
+          ?.details ?? emptyGonioscopy,
+      gonioscopyOS:
+        evaluation.eyes?.leftEye?.logs.find((log) => log.type === "GONIOSCOPY")
+          ?.details ?? "",
+      tonometryOD:
+        evaluation.eyes?.rightEye?.logs.find((log) => log.type === "TONOMETRY")
+          ?.details ?? "",
+      tonometryOS:
+        evaluation.eyes?.leftEye?.logs.find((log) => log.type === "TONOMETRY")
+          ?.details ?? "",
+      pachymetryOD:
+        evaluation.eyes?.rightEye?.logs.find((log) => log.type === "PACHYMETRY")
+          ?.details ?? "",
+      pachymetryOS:
+        evaluation.eyes?.leftEye?.logs.find((log) => log.type === "PACHYMETRY")
+          ?.details ?? "",
+      retinographyOD:
+        evaluation.eyes?.rightEye?.logs.find(
+          (log) => log.type === "RETINOGRAPHY",
+        )?.details ?? "",
+      retinographyOS:
+        evaluation.eyes?.leftEye?.logs.find(
+          (log) => log.type === "RETINOGRAPHY",
+        )?.details ?? "",
+      octOD:
+        evaluation.eyes?.rightEye?.logs.find((log) => log.type === "OCT")
+          ?.details ?? "",
+      octOS:
+        evaluation.eyes?.leftEye?.logs.find((log) => log.type === "OCT")
+          ?.details ?? "",
+      ctCorneaOD:
+        evaluation.eyes?.rightEye?.logs.find((log) => log.type === "CT_CORNEA")
+          ?.details ?? "",
+      ctCorneaOS:
+        evaluation.eyes?.leftEye?.logs.find((log) => log.type === "CT_CORNEA")
+          ?.details ?? "",
+      angiographyOD:
+        evaluation.eyes?.rightEye?.logs.find(
+          (log) => log.type === "ANGIOGRAPHY",
+        )?.details ?? "",
+      angiographyOS:
+        evaluation.eyes?.leftEye?.logs.find((log) => log.type === "ANGIOGRAPHY")
+          ?.details ?? "",
+      visualFieldOD:
+        evaluation.eyes?.rightEye?.logs.find(
+          (log) => log.type === "VISUAL_FIELD",
+        )?.details ?? "",
+      visualFieldOS:
+        evaluation.eyes?.leftEye?.logs.find(
+          (log) => log.type === "VISUAL_FIELD",
+        )?.details ?? "",
       clinicalData: evaluation.clinicalData ?? "",
       diagnosis: evaluation.diagnosis ?? "",
       treatment: evaluation.treatment ?? "",
