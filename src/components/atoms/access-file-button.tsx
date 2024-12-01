@@ -21,6 +21,16 @@ export function AccessFileButton({
       return;
     }
 
+    // Abre a aba imediatamente para evitar bloqueio de pop-ups
+    const newTab = window.open("", "_blank");
+
+    if (!newTab) {
+      console.error(
+        "Não foi possível abrir uma nova aba. Pop-ups podem estar bloqueados.",
+      );
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -31,6 +41,7 @@ export function AccessFileButton({
 
       if (!response.ok) {
         console.error(`Erro ao obter URL pré-assinada: ${response.statusText}`);
+        newTab.close(); // Fecha a aba caso haja erro
         return;
       }
 
@@ -40,13 +51,15 @@ export function AccessFileButton({
 
       if (!downloadUrl) {
         console.error("URL de download não foi retornada pela API.");
+        newTab.close(); // Fecha a aba caso não tenha URL
         return;
       }
 
-      // Abre o documento em uma nova aba
-      window.open(downloadUrl, "_blank");
+      // Redireciona a aba para o URL obtido
+      newTab.location.href = downloadUrl;
     } catch (error) {
       console.error("Erro ao gerar ou acessar o arquivo:", error);
+      newTab.close(); // Fecha a aba caso haja erro
     } finally {
       setLoading(false);
     }
