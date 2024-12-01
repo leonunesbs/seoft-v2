@@ -41,6 +41,9 @@ jobs:
       - name: Check types
         run: pnpm typecheck
 
+      - name: Format Prettier
+        run: pnpm format
+
       - name: Check Prettier
         run: pnpm format:ci
 
