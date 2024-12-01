@@ -1,6 +1,6 @@
 services:
   database:
-    image: "postgres:16.0"
+    image: "postgres:16.6"
     environment:
       POSTGRES_PASSWORD: "local_password"
     ports:
