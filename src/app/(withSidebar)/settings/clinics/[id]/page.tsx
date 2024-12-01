@@ -1,5 +1,5 @@
-import { ClinicForm } from "~/components/organisms/clinic-form";
 import { PageHeading } from "~/components/atoms/page-heading";
+import { ClinicForm } from "~/components/organisms/clinic-form";
 import { db } from "~/server/db";
 
 type Params = Promise<{ id: string }>;
@@ -18,7 +18,7 @@ export default async function ClinicPage({ params }: { params: Params }) {
     },
   });
 
-  // Busca os dados da clínica com seus colaboradores associados
+  // Busca os dados do ambulatório com seus colaboradores associados
   const clinic = await db.clinic.findUnique({
     where: { id: clinicId },
     include: {

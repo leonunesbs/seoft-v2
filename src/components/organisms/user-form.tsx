@@ -10,21 +10,21 @@ import {
   FormMessage,
 } from "~/components/ui/form";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { MdSave } from "react-icons/md";
+import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { MdSave } from "react-icons/md";
 import { Switch } from "~/components/ui/switch";
-import { api } from "~/trpc/react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { api } from "~/trpc/react";
 
 // Schema para o formulário
 const formSchema = z.object({
   id: z.string().min(1, "O ID do Usuário é obrigatório"),
-  name: z.string().optional(),
+  name: z.string().toUpperCase().optional(),
   email: z.string().email("Insira um e-mail válido"),
   isStaff: z.boolean(),
 });
@@ -54,7 +54,7 @@ export function UserForm({ initialData }: UserFormProps) {
         description: "Dados do usuário atualizados com sucesso.",
         variant: "default",
       });
-      router.refresh();
+      router.push("/settings/users");
     },
     onError: (error) => {
       toast({

@@ -14,9 +14,9 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 
-import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { MdEdit } from "react-icons/md";
+import { Button } from "~/components/ui/button";
 
 type Clinic = {
   id: string;
@@ -28,7 +28,7 @@ export function ClinicsTable({ data }: { data: Clinic[] }) {
   if (data.length === 0) {
     return (
       <p className="text-center text-sm text-gray-500">
-        Nenhuma clínica encontrada.
+        Nenhumo ambulatório encontrada.
       </p>
     );
   }

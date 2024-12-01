@@ -10,12 +10,12 @@ import {
   TableRow,
 } from "~/components/ui/table";
 
+import { notFound } from "next/navigation";
 import { CopyPromptButton } from "~/components/atoms/copy-prompt-button";
 import { ReopenEvaluationButton } from "~/components/atoms/reopen-evaluation-button";
-import { Separator } from "~/components/ui/separator";
 import { SignedLink } from "~/components/atoms/signed-link";
+import { Separator } from "~/components/ui/separator";
 import { db } from "~/server/db";
-import { notFound } from "next/navigation";
 
 type Params = Promise<{ id: string }>;
 
@@ -178,13 +178,13 @@ export default async function EvaluationSummaryPage({
       return text;
     };
 
-    // Seção 1: Clínica
-    output += `1. **Clínica**\n`;
+    // Seção 1: Ambulatório
+    output += `1. **Ambulatório**\n`;
 
     const clinicFields = [];
 
     if (clinic?.name) {
-      clinicFields.push(`- Nome da clínica: ${clinic.name}`);
+      clinicFields.push(`- Nome do ambulatório: ${clinic.name}`);
     }
 
     if (clinic?.collaborators && clinic.collaborators.length > 0) {

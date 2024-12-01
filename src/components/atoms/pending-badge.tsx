@@ -1,15 +1,21 @@
 "use client";
 
-import { Badge } from "../ui/badge";
-import { Skeleton } from "../ui/skeleton"; // Import Skeleton for placeholder
+import { Loader2 } from "lucide-react";
 import { api } from "~/trpc/react";
+import { Badge } from "../ui/badge";
 
 export function PendingBadge({ collaboratorId }: { collaboratorId: string }) {
   const { data: pendingEvaluations, isLoading } =
-    api.evaluation.pendingEvaluations.useQuery(collaboratorId);
+    api.evaluation.pendingEvaluations.useQuery(collaboratorId, {
+      refetchInterval: 10, // Refresh every 10 seconds
+      refetchOnMount: true,
+      refetchOnReconnect: true,
+      refetchOnWindowFocus: true,
+      refetchIntervalInBackground: false,
+    });
 
   return isLoading ? (
-    <Skeleton className="h-4 w-4 rounded-full" /> // Placeholder while loading
+    <Loader2 className="h-4 w-4 animate-spin" /> // Placeholder while loading
   ) : (
     <Badge
       variant={

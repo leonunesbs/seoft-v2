@@ -4,7 +4,7 @@ import { z } from "zod";
 
 const clinicSchema = z.object({
   id: z.string().optional(), // Opcional para novos registros
-  name: z.string().min(1, { message: "O nome da clínica é obrigatório." }),
+  name: z.string().min(1, { message: "O nome do ambulatório é obrigatório." }),
   collaborators: z.array(z.string()).optional(), // IDs dos colaboradores associados
 });
 

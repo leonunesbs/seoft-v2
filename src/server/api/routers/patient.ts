@@ -14,12 +14,7 @@ export const patientRouter = createTRPCRouter({
       return patients.map((patient) => ({
         refId: patient.refId,
         name: patient.name,
-        birthDate: patient.birthDate.toLocaleDateString("pt-br", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          timeZone: "UTC",
-        }),
+        birthDate: new Date(patient.birthDate).toISOString(),
       }));
     } catch (error) {
       throw new TRPCError({
@@ -55,26 +50,14 @@ export const patientRouter = createTRPCRouter({
           data: {
             refId: input.refId,
             name: input.name,
-            birthDate: new Date(
-              new Date(input.birthDate).toLocaleDateString("pt-br", {
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit",
-                timeZone: "UTC",
-              }),
-            ),
+            birthDate: new Date(input.birthDate).toISOString(),
           },
         });
 
         return {
           refId: newPatient.refId,
           name: newPatient.name,
-          birthDate: newPatient.birthDate.toLocaleDateString("pt-br", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            timeZone: "UTC",
-          }),
+          birthDate: newPatient.birthDate.toISOString(),
         };
       } catch (error) {
         throw new TRPCError({
@@ -108,12 +91,7 @@ export const patientRouter = createTRPCRouter({
         return {
           refId: patient.refId,
           name: patient.name,
-          birthDate: patient.birthDate.toLocaleDateString("pt-br", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            timeZone: "UTC",
-          }),
+          birthDate: patient.birthDate.toISOString(),
         };
       } catch (error) {
         throw new TRPCError({
@@ -154,12 +132,7 @@ export const patientRouter = createTRPCRouter({
           id: patient.id,
           refId: patient.refId,
           name: patient.name,
-          birthDate: patient.birthDate.toLocaleDateString("pt-br", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            timeZone: "UTC",
-          }),
+          birthDate: patient.birthDate.toISOString(),
         }));
       } catch (error) {
         throw new TRPCError({
@@ -192,12 +165,7 @@ export const patientRouter = createTRPCRouter({
         return {
           refId: patient.refId,
           name: patient.name,
-          birthDate: patient.birthDate.toLocaleDateString("pt-br", {
-            year: "numeric",
-            month: "2-digit",
-            day: "2-digit",
-            timeZone: "UTC",
-          }),
+          birthDate: patient.birthDate.toISOString(),
         };
       } catch (error) {
         throw new TRPCError({
@@ -217,12 +185,7 @@ export const patientRouter = createTRPCRouter({
       return {
         refId: patient.refId,
         name: patient.name,
-        birthDate: patient.birthDate.toLocaleDateString("pt-br", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          timeZone: "UTC",
-        }),
+        birthDate: patient.birthDate.toISOString(),
       };
     } catch (error) {
       throw new TRPCError({

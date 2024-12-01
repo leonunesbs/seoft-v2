@@ -1,16 +1,17 @@
 import { createTRPCRouter, publicProcedure } from "../trpc";
 
 import { type EyeLogType } from "@prisma/client";
+import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 
 const evaluationSchema = z.object({
   id: z.string().optional(),
-  patientId: z.string({ message: "O ID do paciente deve ser um UUID válido." }),
+  patientId: z.string({ message: "O ID do paciente deve ser um CUID válido." }),
   collaboratorId: z.string({
-    message: "O ID do colaborador deve ser um UUID válido.",
+    message: "O ID do colaborador deve ser um CUID válido.",
   }),
   clinicId: z
-    .string({ message: "O ID da clínica deve ser um UUID válido." })
+    .string({ message: "O ID do ambulatório deve ser um UUID válido." })
     .optional(),
   rightEyeId: z.string().optional(),
   leftEyeId: z.string().optional(),
@@ -49,34 +50,44 @@ export const evaluationRouter = createTRPCRouter({
   create: publicProcedure
     .input(evaluationSchema)
     .mutation(async ({ input, ctx }) => {
-      const existingEvaluation = await ctx.db.evaluation.findFirst({
-        where: {
-          patientId: input.patientId,
-          collaboratorId: input.collaboratorId,
-          done: false,
-        },
-      });
+      try {
+        const existingEvaluation = await ctx.db.evaluation.findFirst({
+          where: {
+            patientId: input.patientId,
+            collaboratorId: input.collaboratorId,
+            done: false,
+          },
+        });
 
-      if (existingEvaluation) {
-        return existingEvaluation;
-      }
+        if (existingEvaluation) {
+          return existingEvaluation;
+        }
 
-      return ctx.db.evaluation.create({
-        data: {
-          patientId: input.patientId,
-          collaboratorId: input.collaboratorId,
-          eyes: {
-            create: {
-              leftEye: {
-                create: {},
-              },
-              rightEye: {
-                create: {},
+        const newEvaluation = await ctx.db.evaluation.create({
+          data: {
+            patientId: input.patientId,
+            collaboratorId: input.collaboratorId,
+            eyes: {
+              create: {
+                leftEye: {
+                  create: {},
+                },
+                rightEye: {
+                  create: {},
+                },
               },
             },
           },
-        },
-      });
+        });
+
+        return newEvaluation;
+      } catch (error) {
+        console.error("Erro ao criar avaliação:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Erro ao criar a avaliação. Tente novamente.",
+        });
+      }
     }),
   update: publicProcedure
     .input(evaluationSchema)
@@ -158,9 +169,12 @@ export const evaluationRouter = createTRPCRouter({
     });
   }),
   pendingEvaluations: publicProcedure
-    .input(z.string())
+    .input(z.string().optional())
     .query(async ({ input, ctx }) => {
       const collaboratorId = input;
+      if (!collaboratorId) {
+        return 0;
+      }
       const evaluations = await ctx.db.evaluation.findMany({
         where: {
           collaboratorId: collaboratorId ?? undefined,

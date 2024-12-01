@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useMemo } from "react";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -8,7 +9,6 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "~/components/ui/breadcrumb";
-import React, { useMemo } from "react";
 
 import { usePathname } from "next/navigation";
 
@@ -100,6 +100,16 @@ const routeConfig: RouteConfig[] = [
         path: "/settings/clinics/:id",
         label: () => "Detalhes",
         redirectUrl: "/settings/clinics",
+      },
+      {
+        path: "/settings/residents",
+        label: () => "Residentes",
+        redirectUrl: "/settings/residents",
+      },
+      {
+        path: "/settings/residents/add",
+        label: () => "Adicionar",
+        redirectUrl: "/settings/residents/add",
       },
     ],
   },

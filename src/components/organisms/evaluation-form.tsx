@@ -140,48 +140,44 @@ export function EvaluationForm({
     },
   });
 
-  const createEvaluation = api.evaluation.create.useMutation({
-    onSuccess: () => {
-      toast({
-        title: "Avaliação salva",
-        description: "A avaliação foi salva com sucesso.",
-        variant: "default",
-      });
-      router.refresh();
-    },
-    onError: () => {
-      toast({
-        title: "Erro",
-        description: "Ocorreu um erro ao salvar a avaliação.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const updateEvaluation = api.evaluation.update.useMutation({
-    onSuccess: () => {
+    onSuccess: (data, variables) => {
+      const message = variables.done
+        ? "A avaliação foi marcada como concluída com sucesso."
+        : "A avaliação foi salva com sucesso.";
+      const title = variables.done ? "Avaliação concluída!" : "Avaliação salva";
+
       toast({
-        title: "Avaliação concluída!",
-        description: "A avaliação foi marcada como concluída.",
+        title,
+        description: message,
         variant: "default",
       });
-      router.refresh();
+
+      if (variables.done) {
+        router.push(`/evaluations/${variables.id}/summary`);
+      } else {
+        router.refresh();
+      }
     },
-    onError: () => {
+    onError: (error, variables) => {
+      const message = variables.done
+        ? "Erro ao concluir a avaliação. Tente novamente."
+        : "Erro ao salvar a avaliação. Tente novamente.";
+
       toast({
         title: "Erro",
-        description:
-          "Erro ao marcar a avaliação como concluída. Verifique os dados e tente novamente.",
+        description: message,
         variant: "destructive",
       });
     },
   });
 
-  const isSubmitting = createEvaluation.isPending || updateEvaluation.isPending;
+  const isSubmitting = updateEvaluation.isPending;
 
-  const handleSubmitMainForm = (data: MainFormValues) => {
+  const handleSubmitMainForm = (data: MainFormValues, done = false) => {
     const payload = {
       ...data,
+      done,
       id: evaluation.id || undefined,
       patientId: evaluation.patient.id,
       collaboratorId: evaluation.collaborator.id,
@@ -190,11 +186,7 @@ export function EvaluationForm({
       leftEyeId: evaluation.eyes?.leftEyeId,
     };
 
-    if (evaluation.id) {
-      updateEvaluation.mutate(payload);
-    } else {
-      createEvaluation.mutate(payload);
-    }
+    updateEvaluation.mutate(payload);
   };
 
   function FormActions() {
@@ -211,7 +203,9 @@ export function EvaluationForm({
           <Button
             type="button"
             variant="outline"
-            onClick={mainForm.handleSubmit(handleSubmitMainForm)}
+            onClick={mainForm.handleSubmit((data) =>
+              handleSubmitMainForm(data),
+            )}
             disabled={isSubmitting}
           >
             <MdSave size={18} />
@@ -222,7 +216,7 @@ export function EvaluationForm({
           <Button
             type="button"
             onClick={mainForm.handleSubmit((data) =>
-              handleSubmitMainForm({ ...data, done: true }),
+              handleSubmitMainForm(data, true),
             )}
             disabled={isSubmitting}
           >

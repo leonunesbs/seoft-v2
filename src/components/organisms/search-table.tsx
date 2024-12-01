@@ -1,5 +1,11 @@
 import { MdEdit, MdOutlineHistory } from "react-icons/md";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
+import {
   Table,
   TableBody,
   TableCaption,
@@ -8,16 +14,10 @@ import {
   TableHeader,
   TableRow,
 } from "../ui/table";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
 
-import { AddEvaluationButton } from "../atoms/add-evaluation-button";
-import { Button } from "~/components/ui/button";
 import Link from "next/link";
+import { Button } from "~/components/ui/button";
+import { AddEvaluationButton } from "../atoms/add-evaluation-button";
 
 type Patient = {
   id: string;
@@ -61,7 +61,11 @@ export function SearchTable({ data }: { data: Patient[] }) {
                 {new Date().getFullYear() -
                   new Date(patient.birthDate).getFullYear()}
               </TableCell>
-              <TableCell>{patient.birthDate}</TableCell>
+              <TableCell>
+                {new Date(patient.birthDate).toLocaleDateString("pt-BR", {
+                  timeZone: "UTC",
+                })}
+              </TableCell>
               <TableCell className="flex justify-end gap-2">
                 <TooltipProvider>
                   <Tooltip>

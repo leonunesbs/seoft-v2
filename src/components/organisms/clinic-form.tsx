@@ -1,5 +1,6 @@
 "use client";
 
+import { MdDelete, MdSave } from "react-icons/md";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,21 +21,20 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { MdDelete, MdSave } from "react-icons/md";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { MultiSelect } from "~/components/ui/multi-select";
-import { api } from "~/trpc/react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { api } from "~/trpc/react";
 
 const formSchema = z.object({
   id: z.string().optional(),
-  name: z.string().min(1, "O nome da clínica é obrigatório.").toUpperCase(),
+  name: z.string().min(1, "O nome do ambulatório é obrigatório.").toUpperCase(),
   collaborators: z.array(z.string()).optional(),
 });
 
@@ -72,7 +72,7 @@ export function ClinicForm({ initialData, allCollaborators }: ClinicFormProps) {
     onSuccess: () => {
       toast({
         title: "Sucesso!",
-        description: "A clínica foi cadastrada com sucesso.",
+        description: "O ambulatório foi cadastrado com sucesso.",
         variant: "default",
       });
       form.reset();
@@ -81,7 +81,8 @@ export function ClinicForm({ initialData, allCollaborators }: ClinicFormProps) {
     onError: (error) => {
       toast({
         title: "Erro ao cadastrar",
-        description: error.message || "Ocorreu um erro ao cadastrar a clínica.",
+        description:
+          error.message || "Ocorreu um erro ao cadastrar o ambulatório.",
         variant: "destructive",
       });
     },
@@ -91,7 +92,7 @@ export function ClinicForm({ initialData, allCollaborators }: ClinicFormProps) {
     onSuccess: () => {
       toast({
         title: "Sucesso!",
-        description: "A clínica foi atualizada com sucesso.",
+        description: "O ambulatório foi atualizado com sucesso.",
         variant: "default",
       });
       router.refresh();
@@ -99,7 +100,8 @@ export function ClinicForm({ initialData, allCollaborators }: ClinicFormProps) {
     onError: (error) => {
       toast({
         title: "Erro ao atualizar",
-        description: error.message || "Ocorreu um erro ao atualizar a clínica.",
+        description:
+          error.message || "Ocorreu um erro ao atualizar o ambulatório.",
         variant: "destructive",
       });
     },
@@ -109,7 +111,7 @@ export function ClinicForm({ initialData, allCollaborators }: ClinicFormProps) {
     onSuccess: () => {
       toast({
         title: "Concluído!",
-        description: "A clínica foi excluída com sucesso.",
+        description: "O ambulatório foi excluído com sucesso.",
         variant: "default",
       });
       form.reset();
@@ -118,7 +120,8 @@ export function ClinicForm({ initialData, allCollaborators }: ClinicFormProps) {
     onError: (error) => {
       toast({
         title: "Erro ao excluir",
-        description: error.message || "Ocorreu um erro ao excluir a clínica.",
+        description:
+          error.message || "Ocorreu um erro ao excluir o ambulatório.",
         variant: "destructive",
       });
     },
@@ -142,7 +145,7 @@ export function ClinicForm({ initialData, allCollaborators }: ClinicFormProps) {
       <form
         onSubmit={form.handleSubmit(handleSubmit)}
         className="flex flex-col gap-4"
-        aria-label="Formulário de Edição de Clínica"
+        aria-label="Formulário de Edição de Ambulatório"
       >
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {initialData && (
@@ -156,7 +159,7 @@ export function ClinicForm({ initialData, allCollaborators }: ClinicFormProps) {
                     <Input {...field} disabled readOnly />
                   </FormControl>
                   <FormDescription>
-                    ID único da clínica. Não pode ser alterado.
+                    ID único do ambulatório. Não pode ser alterado.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -170,7 +173,10 @@ export function ClinicForm({ initialData, allCollaborators }: ClinicFormProps) {
               <FormItem>
                 <FormLabel>Nome</FormLabel>
                 <FormControl>
-                  <Input {...field} placeholder="Digite o nome da clínica" />
+                  <Input
+                    {...field}
+                    placeholder="Digite o nome do ambulatório"
+                  />
                 </FormControl>
                 <FormDescription>Exemplo: Glaucoma / Catarata.</FormDescription>
                 <FormMessage />

@@ -69,7 +69,7 @@ export function StaffsTable({ data }: StaffsTableProps) {
                   ? staff.clinics
                       .map((clinicAssoc) => clinicAssoc.clinic.name)
                       .join(", ")
-                  : "Nenhuma clínica associada"}
+                  : "Nenhumo ambulatório associada"}
               </TableCell>
               <TableCell className="flex justify-end gap-2">
                 <TooltipProvider>

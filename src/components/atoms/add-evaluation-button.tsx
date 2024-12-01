@@ -1,14 +1,16 @@
 "use client";
 
-import { Button } from "../ui/button";
-import { MdOutlineUploadFile } from "react-icons/md";
-import { api } from "~/trpc/react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { MdOutlineUploadFile } from "react-icons/md";
 import { useToast } from "~/hooks/use-toast";
+import { api } from "~/trpc/react";
+import { Button } from "../ui/button";
 
 export function AddEvaluationButton({
   patientId,
   patientName,
+  ...rest
 }: {
   patientId: string;
   patientName: string;
@@ -16,18 +18,17 @@ export function AddEvaluationButton({
   const router = useRouter();
   const { toast } = useToast();
 
-  // Utiliza o tRPC para obter o colaborador atual
-  const { data: collaboratorData, isLoading: isCollaboratorLoading } =
-    api.utils.currentCollaborator.useQuery();
+  const {
+    data: collaboratorData,
+    isLoading: isCollaboratorLoading,
+    error: collaboratorError,
+  } = api.utils.currentCollaborator.useQuery();
 
-  // Utiliza o tRPC para criar avaliação
   const createEvaluation = api.evaluation.create.useMutation({
-    onSuccess(data) {
-      const message =
-        data.done === false
-          ? `Continuando avaliação de ${patientName}.`
-          : `Nova avaliação de ${patientName} criada.`;
-
+    async onSuccess(data) {
+      const message = data.done
+        ? `Nova avaliação de ${patientName} criada.`
+        : `Continuando avaliação de ${patientName}.`;
       toast({
         title: "Sucesso!",
         description: message,
@@ -35,7 +36,7 @@ export function AddEvaluationButton({
         duration: 3000,
       });
 
-      router.push(`/evaluations/${data.id}`);
+      void router.push(`/evaluations/${data.id}`);
     },
     onError(error) {
       toast({
@@ -59,32 +60,48 @@ export function AddEvaluationButton({
       return;
     }
 
-    const collaboratorId = collaboratorData?.collaboratorId;
-    if (!collaboratorId) {
+    if (collaboratorError || !collaboratorData?.collaboratorId) {
       toast({
         title: "Erro!",
-        description: "Colaborador não selecionado. Verifique o menu lateral.",
+        description:
+          collaboratorError?.message ??
+          "Colaborador não encontrado. Verifique o menu lateral.",
         variant: "destructive",
         duration: 3000,
       });
       return;
     }
 
-    // Chamada da mutação com os dados necessários
-    createEvaluation.mutate({
-      patientId,
-      collaboratorId,
-    });
+    try {
+      createEvaluation.mutate({
+        patientId,
+        collaboratorId: collaboratorData.collaboratorId,
+      });
+    } catch {
+      toast({
+        title: "Erro!",
+        description:
+          "Ocorreu um erro ao tentar criar a avaliação. Tente novamente.",
+        variant: "destructive",
+        duration: 3000,
+      });
+    }
   };
 
   return (
     <Button
+      {...rest}
       type="button"
       variant="outline"
       aria-label={`Nova avaliação de ${patientName}`}
       onClick={handleAddEvaluation}
+      disabled={isCollaboratorLoading || createEvaluation.isPending}
     >
-      <MdOutlineUploadFile size={18} />
+      {createEvaluation.isPending ? (
+        <Loader2 className="animate-spin" />
+      ) : (
+        <MdOutlineUploadFile size={18} />
+      )}
     </Button>
   );
 }

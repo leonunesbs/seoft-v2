@@ -14,14 +14,10 @@ import { db } from "~/server/db";
 import { HydrateClient } from "~/trpc/server";
 
 export default async function Dashboard() {
-  // Dados agregados para exibição
-  const [patientsCount, clinicsCount, collaboratorsCount, evaluationsCount] =
-    await Promise.all([
-      db.patient.count(),
-      db.clinic.count(),
-      db.collaborator.count(),
-      db.evaluation.count(),
-    ]);
+  const patientsCount = await db.patient.count();
+  const clinicsCount = await db.clinic.count();
+  const collaboratorsCount = await db.collaborator.count();
+  const evaluationsCount = await db.evaluation.count();
 
   const recentEvaluations = await db.evaluation.findMany({
     take: 5,
