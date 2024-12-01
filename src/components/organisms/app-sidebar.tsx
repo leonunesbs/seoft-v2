@@ -121,7 +121,9 @@ export function AppSidebar({
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <CollaboratorSwitcher collaborators={collaborators} />
+        <React.Suspense fallback={<span>Carregando...</span>}>
+          <CollaboratorSwitcher collaborators={collaborators} />
+        </React.Suspense>
         <SearchForm />
       </SidebarHeader>
       <SidebarContent>
