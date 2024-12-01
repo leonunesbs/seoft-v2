@@ -34,8 +34,8 @@ import { toast } from "~/hooks/use-toast";
 import { api } from "~/trpc/react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
-import { Input } from "../ui/input";
 import { Separator } from "../ui/separator";
+import { Slider } from "../ui/slider";
 
 const visualAcuityOptions = [
   ">20/20",
@@ -63,13 +63,13 @@ const visualAcuityOptions = [
 const refractionSchema = z.object({
   leftEyeId: z.string().optional(),
   rightEyeId: z.string().optional(),
-  sphericalOD: z.string().optional(),
-  cylinderOD: z.string().optional(),
-  axisOD: z.string().optional(),
+  sphericalOD: z.union([z.string(), z.number()]).optional(),
+  cylinderOD: z.union([z.string(), z.number()]).optional(),
+  axisOD: z.union([z.string(), z.number()]).optional(),
   visualAcuityOD: z.string().min(1, "A acuidade visual é obrigatória."),
-  sphericalOS: z.string().optional(),
-  cylinderOS: z.string().optional(),
-  axisOS: z.string().optional(),
+  sphericalOS: z.union([z.string(), z.number()]).optional(),
+  cylinderOS: z.union([z.string(), z.number()]).optional(),
+  axisOS: z.union([z.string(), z.number()]).optional(),
   visualAcuityOS: z.string().min(1, "A acuidade visual é obrigatória."),
 });
 
@@ -161,12 +161,12 @@ export function EvaluationRefractionForm({
     defaultValues: {
       leftEyeId: leftEye?.id ?? "",
       rightEyeId: rightEye?.id ?? "",
-      sphericalOD: "",
-      sphericalOS: "",
-      cylinderOD: "",
-      cylinderOS: "",
-      axisOD: "",
-      axisOS: "",
+      sphericalOD: 0,
+      sphericalOS: 0,
+      cylinderOD: 0,
+      cylinderOS: 0,
+      axisOD: 180,
+      axisOS: 180,
       visualAcuityOD: "",
       visualAcuityOS: "",
     },
@@ -218,15 +218,15 @@ export function EvaluationRefractionForm({
       leftEyeId: data.leftEyeId!,
       rightEyeId: data.rightEyeId!,
       leftEyeData: {
-        spherical: data.sphericalOS ? parseFloat(data.sphericalOS) : null,
-        cylinder: data.cylinderOS ? parseFloat(data.cylinderOS) : null,
-        axis: data.axisOS ? parseFloat(data.axisOS) : null,
+        spherical: data.sphericalOS ? Number(data.sphericalOS) : null,
+        cylinder: data.cylinderOS ? Number(data.cylinderOS) : null,
+        axis: data.axisOS ? Number(data.axisOS) : null,
         visualAcuity: data.visualAcuityOS,
       },
       rightEyeData: {
-        spherical: data.sphericalOD ? parseFloat(data.sphericalOD) : null,
-        cylinder: data.cylinderOD ? parseFloat(data.cylinderOD) : null,
-        axis: data.axisOD ? parseFloat(data.axisOD) : null,
+        spherical: data.sphericalOD ? Number(data.sphericalOD) : null,
+        cylinder: data.cylinderOD ? Number(data.cylinderOD) : null,
+        axis: data.axisOD ? Number(data.axisOD) : null,
         visualAcuity: data.visualAcuityOD,
       },
     });
@@ -246,16 +246,13 @@ export function EvaluationRefractionForm({
     }
     form.setValue(
       "sphericalOS",
-      lastEyesData.leftEye?.refraction[0]?.spherical?.toString() ?? "",
+      lastEyesData.leftEye?.refraction[0]?.spherical ?? 0,
     );
     form.setValue(
       "cylinderOS",
-      lastEyesData.leftEye?.refraction[0]?.cylinder?.toString() ?? "",
+      lastEyesData.leftEye?.refraction[0]?.cylinder ?? 0,
     );
-    form.setValue(
-      "axisOS",
-      lastEyesData.leftEye?.refraction[0]?.axis?.toString() ?? "",
-    );
+    form.setValue("axisOS", lastEyesData.leftEye?.refraction[0]?.axis ?? 0);
     form.setValue(
       "visualAcuityOS",
       lastEyesData.leftEye?.refraction[0]?.visualAcuity ?? "",
@@ -263,16 +260,13 @@ export function EvaluationRefractionForm({
 
     form.setValue(
       "sphericalOD",
-      lastEyesData.rightEye?.refraction[0]?.spherical?.toString() ?? "",
+      lastEyesData.rightEye?.refraction[0]?.spherical ?? 0,
     );
     form.setValue(
       "cylinderOD",
-      lastEyesData.rightEye?.refraction[0]?.cylinder?.toString() ?? "",
+      lastEyesData.rightEye?.refraction[0]?.cylinder ?? 0,
     );
-    form.setValue(
-      "axisOD",
-      lastEyesData.rightEye?.refraction[0]?.axis?.toString() ?? "",
-    );
+    form.setValue("axisOD", lastEyesData.rightEye?.refraction[0]?.axis ?? 0);
     form.setValue(
       "visualAcuityOD",
       lastEyesData.rightEye?.refraction[0]?.visualAcuity ?? "",
@@ -287,7 +281,7 @@ export function EvaluationRefractionForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
-        <Card>
+        <Card className="min-w-lg">
           <CardHeader>
             <CardTitle className="flex justify-between">
               Acuidade e Refração
@@ -323,15 +317,33 @@ export function EvaluationRefractionForm({
             <div className="space-y-6">
               <div>
                 <div className="text-sm font-semibold">Olho Direito</div>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-col gap-2">
                   <FormField
                     control={form.control}
                     name="sphericalOD"
                     render={({ field }) => (
-                      <FormItem className="w-24">
-                        <FormLabel>Esférico</FormLabel>
+                      <FormItem className="">
+                        <FormLabel>
+                          Esférico:{" "}
+                          {Number(field.value)! > 0
+                            ? `+${parseFloat(field.value as unknown as string).toFixed(2)}`
+                            : parseFloat(
+                                field.value as unknown as string,
+                              ).toFixed(2)}
+                        </FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Esf." />
+                          <Slider
+                            {...field}
+                            onValueChange={(value) => {
+                              field.onChange(value[0]);
+                            }}
+                            value={[
+                              parseFloat(field.value as unknown as string) ?? 0,
+                            ]}
+                            max={20}
+                            min={-20}
+                            step={0.25}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -341,10 +353,29 @@ export function EvaluationRefractionForm({
                     control={form.control}
                     name="cylinderOD"
                     render={({ field }) => (
-                      <FormItem className="w-24">
-                        <FormLabel>Cilíndrico</FormLabel>
+                      <FormItem className="">
+                        <FormLabel>
+                          Cilíndrico:{" "}
+                          {Number(field.value)! > 0
+                            ? `+${parseFloat(field.value as unknown as string).toFixed(2)}`
+                            : parseFloat(
+                                field.value as unknown as string,
+                              ).toFixed(2)}
+                        </FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Cil." />
+                          <Slider
+                            onValueChange={(value) => {
+                              if (field.value !== -value[0]!) {
+                                field.onChange(-value[0]!); // Atualiza apenas se o valor mudou
+                              }
+                            }}
+                            value={[
+                              Number(field.value) ? -Number(field.value) : 0,
+                            ]} // Inverte o valor para exibição
+                            max={6}
+                            min={0}
+                            step={0.25}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -354,10 +385,19 @@ export function EvaluationRefractionForm({
                     control={form.control}
                     name="axisOD"
                     render={({ field }) => (
-                      <FormItem className="w-24">
-                        <FormLabel>Eixo</FormLabel>
+                      <FormItem className="">
+                        <FormLabel>Eixo: {field.value}º</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Eixo" />
+                          <Slider
+                            {...field}
+                            onValueChange={(value) => {
+                              field.onChange(value[0]);
+                            }}
+                            value={[Number(field.value) ?? 0]}
+                            max={180}
+                            min={0}
+                            step={5}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -394,15 +434,31 @@ export function EvaluationRefractionForm({
               </div>
               <div>
                 <div className="text-sm font-semibold">Olho Esquerdo</div>
-                <div className="flex flex-wrap gap-4">
+                <div className="flex flex-col gap-2">
                   <FormField
                     control={form.control}
                     name="sphericalOS"
                     render={({ field }) => (
-                      <FormItem className="w-24">
-                        <FormLabel>Esférico</FormLabel>
+                      <FormItem className="">
+                        <FormLabel>
+                          Esférico:{" "}
+                          {Number(field.value)! > 0
+                            ? `+${parseFloat(field.value as unknown as string).toFixed(2)}`
+                            : parseFloat(
+                                field.value as unknown as string,
+                              ).toFixed(2)}
+                        </FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Esf." />
+                          <Slider
+                            {...field}
+                            onValueChange={(value) => {
+                              field.onChange(value[0]);
+                            }}
+                            value={[Number(field.value) ?? 0]}
+                            max={20}
+                            min={-20}
+                            step={0.25}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -412,10 +468,29 @@ export function EvaluationRefractionForm({
                     control={form.control}
                     name="cylinderOS"
                     render={({ field }) => (
-                      <FormItem className="w-24">
-                        <FormLabel>Cilíndrico</FormLabel>
+                      <FormItem className="">
+                        <FormLabel>
+                          Cilíndrico:{" "}
+                          {Number(field.value)! > 0
+                            ? `+${parseFloat(field.value as unknown as string).toFixed(2)}`
+                            : parseFloat(
+                                field.value as unknown as string,
+                              ).toFixed(2)}
+                        </FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Cil." />
+                          <Slider
+                            onValueChange={(value) => {
+                              if (field.value !== -value[0]!) {
+                                field.onChange(-value[0]!); // Atualiza apenas se o valor mudou
+                              }
+                            }}
+                            value={[
+                              Number(field.value) ? -Number(field.value) : 0,
+                            ]} // Inverte o valor para exibição
+                            max={6}
+                            min={0}
+                            step={0.25}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -425,10 +500,19 @@ export function EvaluationRefractionForm({
                     control={form.control}
                     name="axisOS"
                     render={({ field }) => (
-                      <FormItem className="w-24">
-                        <FormLabel>Eixo</FormLabel>
+                      <FormItem className="">
+                        <FormLabel>Eixo: {field.value}º</FormLabel>
                         <FormControl>
-                          <Input {...field} placeholder="Eixo" />
+                          <Slider
+                            {...field}
+                            onValueChange={(value) => {
+                              field.onChange(value[0]);
+                            }}
+                            value={[Number(field.value) ?? 0]}
+                            max={180}
+                            min={0}
+                            step={5}
+                          />
                         </FormControl>
                         <FormMessage />
                       </FormItem>

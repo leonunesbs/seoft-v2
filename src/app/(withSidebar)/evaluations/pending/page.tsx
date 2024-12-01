@@ -56,7 +56,7 @@ export default async function EvaluationPending() {
 
   return (
     <div className="space-y-2">
-      <div className="flex gap-4">
+      <div className="flex gap-2">
         <div className="flex aspect-square size-8 items-center justify-center rounded-lg border">
           <FaUserMd />
         </div>
