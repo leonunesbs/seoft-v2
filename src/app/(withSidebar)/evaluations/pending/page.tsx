@@ -136,7 +136,7 @@ export default async function EvaluationPending() {
                           aria-label={`Editar ${patient.name}`}
                           asChild
                         >
-                          <Link href={`/patients/${patient.refId}`}>
+                          <Link href={`/patients/${patient.id}`}>
                             <MdEdit size={18} />
                           </Link>
                         </Button>
