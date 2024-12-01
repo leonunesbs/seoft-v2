@@ -14,9 +14,9 @@ export default async function Unauthorized() {
     redirect("/");
   }
   return (
-    <div className="flex h-screen flex-col items-center justify-center gap-4">
+    <div className="flex h-screen flex-col items-center justify-center gap-4 px-4">
       <h1 className="text-4xl font-bold">401</h1>
-      <p className="text-lg">
+      <p className="text-center text-lg">
         Você não tem permissão para acessar esta página.
       </p>
       <Form
