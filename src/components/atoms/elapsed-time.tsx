@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 interface ElapsedTimeProps {
   startTime: string; // Data/hora inicial em formato ISO 8601
 }
 
 export function ElapsedTime({ startTime }: ElapsedTimeProps) {
-  const [elapsed, setElapsed] = useState('');
+  const [elapsed, setElapsed] = useState("");
 
   useEffect(() => {
     const calculateElapsedTime = () => {
@@ -26,7 +26,7 @@ export function ElapsedTime({ startTime }: ElapsedTimeProps) {
       } else if (diffMinutes > 0) {
         return `${diffMinutes} minuto(s) atrás`;
       }
-      return 'há menos de 1 minuto';
+      return "há menos de 1 minuto";
     };
 
     setElapsed(calculateElapsedTime());

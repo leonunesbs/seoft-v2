@@ -1,4 +1,4 @@
-'use client';
+"use client";
 interface RippleLoaderProps {
   size?: number; // Size of the loader in pixels
 }
@@ -16,7 +16,7 @@ export function RippleLoader({ size = 35 }: RippleLoaderProps) {
       role="presentation"
     >
       <div
-        className="absolute border-current rounded-full animate-ripple"
+        className="animate-ripple absolute rounded-full border-current"
         style={{
           borderWidth: borderWidth,
           top: size / 2 - borderWidth * 2,
@@ -24,12 +24,12 @@ export function RippleLoader({ size = 35 }: RippleLoaderProps) {
         }}
       ></div>
       <div
-        className="absolute border-current rounded-full animate-ripple"
+        className="animate-ripple absolute rounded-full border-current"
         style={{
           borderWidth: borderWidth,
           top: size / 2 - borderWidth * 2,
           left: size / 2 - borderWidth * 2,
-          animationDelay: '-0.5s',
+          animationDelay: "-0.5s",
         }}
       ></div>
       <style jsx>{`

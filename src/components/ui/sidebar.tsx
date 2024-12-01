@@ -395,7 +395,6 @@ const SidebarSeparator = React.forwardRef<
     <Separator
       ref={ref}
       data-sidebar="separator"
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       className={cn("mx-2 w-auto bg-sidebar-border", className)}
       {...props}
     />
@@ -546,7 +545,7 @@ const SidebarMenuButton = React.forwardRef<
   React.ComponentProps<"button"> & {
     asChild?: boolean;
     isActive?: boolean;
-    // eslint-disable-next-line @typescript-eslint/no-redundant-type-constituents
+
     tooltip?: string | React.ComponentProps<typeof TooltipContent>;
   } & VariantProps<typeof sidebarMenuButtonVariants>
 >(

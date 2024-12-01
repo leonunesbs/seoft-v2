@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
 "use client";
 
 import * as AccordionPrimitive from "@radix-ui/react-accordion";
@@ -9,7 +6,6 @@ import * as React from "react";
 import { ChevronDown } from "lucide-react";
 import { cn } from "~/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
 const Accordion = AccordionPrimitive.Root;
 
 const AccordionItem = React.forwardRef<
