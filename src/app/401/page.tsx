@@ -8,10 +8,10 @@ import { Button } from "~/components/ui/button";
 export default async function Unauthorized() {
   const session = await auth();
   if (!session?.user) {
-    return redirect("/signin");
+    redirect("/signin");
   }
   if (session?.user.isStaff) {
-    return redirect("/");
+    redirect("/");
   }
   return (
     <div className="flex h-screen flex-col items-center justify-center gap-4">

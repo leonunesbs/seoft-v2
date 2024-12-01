@@ -24,9 +24,11 @@ export default async function Layout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-
+  if (!session?.user) {
+    redirect("/signin");
+  }
   if (!session?.user.isStaff) {
-    return redirect("/401");
+    redirect("/401");
   }
   const cookieStore = await cookies();
   const collaboratorId =
