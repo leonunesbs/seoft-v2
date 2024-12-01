@@ -82,6 +82,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <head>
+        {/* <script src="https://unpkg.com/react-scan/dist/auto.global.js" async /> */}
         {/* Favicons */}
         <link
           rel="icon"
