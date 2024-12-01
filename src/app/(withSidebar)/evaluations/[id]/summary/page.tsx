@@ -433,7 +433,7 @@ export default async function EvaluationSummaryPage({
             <strong>Colaborador:</strong> {collaborator.name || "N/A"}
           </p>
           <p>
-            <strong>Clínica:</strong> {clinic?.name ?? "N/A"}{" "}
+            <strong>Ambulatório:</strong> {clinic?.name ?? "N/A"}{" "}
             {clinic?.collaborators &&
               clinic.collaborators.length > 0 &&
               `(${clinic?.collaborators.map((c) => c.collaborator.name).join(", ")})`}

@@ -38,7 +38,7 @@ export default async function ClinicPage({ params }: { params: Params }) {
   if (!clinic) {
     return (
       <p className="text-center text-sm text-gray-500">
-        Clínica não encontrada.
+        Ambulatório não encontrado.
       </p>
     );
   }

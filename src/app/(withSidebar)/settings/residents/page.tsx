@@ -1,11 +1,11 @@
-import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { MdAddCircleOutline } from "react-icons/md";
 import { PageHeading } from "~/components/atoms/page-heading";
 import { ResidentsTable } from "~/components/organisms/residents-table";
+import { Button } from "~/components/ui/button";
 import { db } from "~/server/db";
 
-// Função assíncrona para buscar colaboradores e clínicas associadas
+// Função assíncrona para buscar colaboradores e abulatórios associados
 export default async function ResidentsPage() {
   // Consulta ao banco de dados usando Prisma
   const residents = await db.collaborator.findMany({

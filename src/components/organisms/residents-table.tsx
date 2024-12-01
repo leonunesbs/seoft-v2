@@ -19,7 +19,6 @@ import {
   TooltipTrigger,
 } from "~/components/ui/tooltip";
 
-// Tipo específico baseado no Prisma para incluir clínicas associadas
 type ResidentWithClinics = Prisma.CollaboratorGetPayload<{
   include: {
     clinics: { include: { clinic: { select: { id: true; name: true } } } };
@@ -44,7 +43,8 @@ export function ResidentsTable({ data }: ResidentsTableProps) {
     <div className="overflow-x-auto rounded border">
       <Table className="w-full">
         <TableCaption>
-          Lista de residentes cadastrados no sistema e suas clínicas associadas.
+          Lista de residentes cadastrados no sistema e seus ambulatórios
+          associados.
         </TableCaption>
         <TableHeader>
           <TableRow>

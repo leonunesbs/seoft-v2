@@ -28,7 +28,7 @@ export function ClinicsTable({ data }: { data: Clinic[] }) {
   if (data.length === 0) {
     return (
       <p className="text-center text-sm text-gray-500">
-        Nenhumo ambulatório encontrada.
+        Nenhumo ambulatório encontrado.
       </p>
     );
   }
@@ -37,7 +37,7 @@ export function ClinicsTable({ data }: { data: Clinic[] }) {
     <div className="overflow-x-auto rounded border">
       <Table className="w-full">
         <TableCaption>
-          Lista de clínicas cadastradas no sistema e seus colaboradores.
+          Lista de ambulatórios cadastrados no sistema e seus colaboradores.
         </TableCaption>
         <TableHeader>
           <TableRow>

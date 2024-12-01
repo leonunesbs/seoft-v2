@@ -21,7 +21,6 @@ import {
 
 // Prisma Staff Type
 
-// Tipo específico baseado no Prisma para incluir clínicas associadas
 type StaffWithClinics = Prisma.CollaboratorGetPayload<{
   include: {
     clinics: { include: { clinic: { select: { id: true; name: true } } } };
@@ -46,7 +45,7 @@ export function StaffsTable({ data }: StaffsTableProps) {
     <div className="overflow-x-auto rounded border">
       <Table className="w-full">
         <TableCaption>
-          Lista de colaboradores cadastrados no sistema e suas clínicas
+          Lista de colaboradores cadastrados no sistema e seus ambulatórios
           associadas.
         </TableCaption>
         <TableHeader>

@@ -1,13 +1,11 @@
-import { Button } from "~/components/ui/button";
 import Link from "next/link";
 import { MdAddCircleOutline } from "react-icons/md";
 import { PageHeading } from "~/components/atoms/page-heading";
 import { StaffsTable } from "~/components/organisms/staffs-table";
+import { Button } from "~/components/ui/button";
 import { db } from "~/server/db";
 
-// Função assíncrona para buscar colaboradores e clínicas associadas
 export default async function StaffsPage() {
-  // Consulta ao banco de dados usando Prisma
   const staffs = await db.collaborator.findMany({
     include: {
       clinics: {

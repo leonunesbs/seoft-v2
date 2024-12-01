@@ -7,7 +7,6 @@ type Params = Promise<{ id: string }>;
 export default async function StaffPage({ params }: { params: Params }) {
   const { id: staffId } = await params;
 
-  // Busca todas as clínicas disponíveis
   const allClinics = await db.clinic.findMany({
     select: {
       id: true,
@@ -18,7 +17,6 @@ export default async function StaffPage({ params }: { params: Params }) {
     },
   });
 
-  // Busca os dados do colaborador com as clínicas associadas
   const staff = await db.collaborator.findUnique({
     where: { id: staffId },
     include: {

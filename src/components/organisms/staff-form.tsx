@@ -1,5 +1,6 @@
 "use client";
 
+import { MdDelete, MdSave } from "react-icons/md";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +21,6 @@ import {
   FormLabel,
   FormMessage,
 } from "~/components/ui/form";
-import { MdDelete, MdSave } from "react-icons/md";
 import {
   Select,
   SelectContent,
@@ -29,15 +29,15 @@ import {
   SelectValue,
 } from "~/components/ui/select";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useRouter } from "next/navigation";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { MultiSelect } from "~/components/ui/multi-select";
-import { api } from "~/trpc/react";
-import { useForm } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { useToast } from "~/hooks/use-toast";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
+import { api } from "~/trpc/react";
 
 const roles = [
   "I1",
@@ -61,7 +61,7 @@ const formSchema = z.object({
     .min(1, "O CRM é obrigatório")
     .regex(/^\d+$/, "O CRM deve conter apenas números"),
   role: z.enum(roles),
-  clinics: z.array(z.string()).optional(), // IDs das clínicas associadas
+  clinics: z.array(z.string()).optional(),
 });
 
 type StaffFormProps = {
@@ -255,7 +255,7 @@ export function StaffForm({ initialData, allClinics }: StaffFormProps) {
                   />
                 </FormControl>
                 <FormDescription>
-                  Selecione as clínicas em que o colaborador atua.
+                  Selecione os ambulatórios em que o colaborador atua.
                 </FormDescription>
                 <FormMessage />
               </FormItem>

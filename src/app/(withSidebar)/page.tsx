@@ -87,7 +87,7 @@ export default async function Dashboard() {
                 <TableRow>
                   <TableHead>Paciente</TableHead>
                   <TableHead>Colaborador</TableHead>
-                  <TableHead>Clínica</TableHead>
+                  <TableHead>Ambulatório</TableHead>
                   <TableHead>Data</TableHead>
                   <TableHead>Status</TableHead>
                 </TableRow>
