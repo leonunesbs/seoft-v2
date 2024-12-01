@@ -31,15 +31,6 @@ export default async function Layout({
   const collaboratorId =
     cookieStore.get("selected-collaborator")?.value ?? null;
 
-  const evaluations = await db.evaluation.findMany({
-    where: {
-      collaboratorId: collaboratorId ?? undefined,
-      done: false,
-    },
-  });
-
-  const pendingEvaluations = evaluations.length;
-
   const collaborators = await db.collaborator.findMany({
     where: {
       role: {
@@ -54,7 +45,7 @@ export default async function Layout({
     <SidebarProvider>
       <AppSidebar
         collaborators={collaborators}
-        pedingEvaluations={pendingEvaluations}
+        currentCollaboratorId={collaboratorId!}
       />
       <SidebarInset>
         <header className="sticky top-0 z-50 flex h-16 max-h-16 grow items-center justify-between gap-2 border-b bg-background px-4 md:px-6 lg:px-8">
@@ -92,7 +83,7 @@ export default async function Layout({
             </Form>
           </div>
         </header>
-        <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-4 p-4 md:p-6 lg:p-8">
+        <main className="mx-auto flex w-full max-w-[1280px] flex-1 flex-col gap-4 px-2 py-4 md:px-4 lg:px-8">
           {children}
         </main>
         <footer className="flex">

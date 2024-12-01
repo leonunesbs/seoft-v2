@@ -157,4 +157,17 @@ export const evaluationRouter = createTRPCRouter({
       where: { id: input },
     });
   }),
+  pendingEvaluations: publicProcedure
+    .input(z.string())
+    .query(async ({ input, ctx }) => {
+      const collaboratorId = input;
+      const evaluations = await ctx.db.evaluation.findMany({
+        where: {
+          collaboratorId: collaboratorId ?? undefined,
+          done: false,
+        },
+      });
+
+      return evaluations.length;
+    }),
 });

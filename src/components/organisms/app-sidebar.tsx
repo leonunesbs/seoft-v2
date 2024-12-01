@@ -15,7 +15,6 @@ import {
 
 import { CollaboratorSwitcher } from "~/components/organisms/collaborator-switcher";
 import { SearchForm } from "~/components/organisms/search-form";
-import { Badge } from "~/components/ui/badge";
 import {
   Sidebar,
   SidebarContent,
@@ -29,15 +28,18 @@ import {
   SidebarMenuSubItem,
   SidebarRail,
 } from "~/components/ui/sidebar";
+import { HydrateClient } from "~/trpc/server";
+import { PendingBadge } from "../atoms/pending-badge";
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   collaborators: Collaborator[];
-  pedingEvaluations?: number;
+  currentCollaboratorId?: string;
 }
 
 export function AppSidebar({
   collaborators,
-  pedingEvaluations,
+  currentCollaboratorId,
+
   ...props
 }: AppSidebarProps) {
   const data: {
@@ -62,18 +64,9 @@ export function AppSidebar({
             title: "Em andamento",
             url: "/evaluations/pending",
             icon: (
-              <Badge
-                variant={
-                  pedingEvaluations
-                    ? pedingEvaluations > 0
-                      ? "default"
-                      : "outline"
-                    : "outline"
-                }
-                className="flex size-4 justify-center px-0 text-center"
-              >
-                {pedingEvaluations}
-              </Badge>
+              <HydrateClient>
+                <PendingBadge collaboratorId={currentCollaboratorId!} />
+              </HydrateClient>
             ),
           },
         ],

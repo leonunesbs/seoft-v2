@@ -6,19 +6,13 @@ import { MdOutlineChevronLeft } from "react-icons/md";
 
 import { Button } from "~/components/ui/button";
 
-interface BackButtonProps extends HTMLAttributes<HTMLButtonElement> {
-  path?: string; // Optional custom path
-}
+type BackButtonProps = HTMLAttributes<HTMLButtonElement>;
 
-export function BackButton({ path, ...rest }: BackButtonProps) {
+export function BackButton({ ...rest }: BackButtonProps) {
   const router = useRouter();
 
   const handleNavigation = () => {
-    if (path) {
-      router.push(path); // Navigate to the custom path
-    } else {
-      router.back(); // Navigate back
-    }
+    router.back(); // Navigate back
   };
 
   return (

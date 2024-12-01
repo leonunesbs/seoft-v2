@@ -1,12 +1,15 @@
-import { type HTMLAttributes, type ReactNode } from 'react';
+import { type HTMLAttributes, type ReactNode } from "react";
 
-import { BackButton } from './back-button';
+import { BackButton } from "./back-button";
 
 interface PageHeadingProps extends HTMLAttributes<HTMLHeadingElement> {
   children: ReactNode;
 }
 
-export function PageHeading({ children, ...rest }: PageHeadingProps): ReactNode {
+export function PageHeading({
+  children,
+  ...rest
+}: PageHeadingProps): ReactNode {
   return (
     <div className="flex">
       <BackButton />

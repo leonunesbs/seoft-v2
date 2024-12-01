@@ -5,6 +5,7 @@ import { evaluationRouter } from "./routers/evaluation";
 import { patientRouter } from "./routers/patient";
 import { residentRouter } from "./routers/resident";
 import { staffRouter } from "./routers/staff";
+import { userRouter } from "./routers/users";
 import { utilsRouter } from "./routers/utils";
 
 /**
@@ -19,6 +20,7 @@ export const appRouter = createTRPCRouter({
   resident: residentRouter,
   evaluation: evaluationRouter,
   utils: utilsRouter,
+  user: userRouter,
 });
 
 // export type definition of API
