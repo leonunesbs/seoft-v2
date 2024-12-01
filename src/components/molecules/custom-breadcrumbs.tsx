@@ -12,107 +12,115 @@ import React, { useMemo } from "react";
 
 import { usePathname } from "next/navigation";
 
-// Define a interface para configuração de breadcrumbs
-interface BreadcrumbConfig {
-  path: string;
-  label: string;
-  redirectUrl?: string; // URL opcional de redirecionamento
-  children?: BreadcrumbConfig[];
+// Interface para configuração de rotas
+interface RouteConfig {
+  path: string; // Caminho exato ou dinâmico
+  label: (params?: Record<string, string>) => string; // Suporte a parâmetros dinâmicos
+  redirectUrl?: string; // URL personalizada para redirecionamento
+  children?: RouteConfig[];
 }
 
-// Configuração de rotas estáticas
-const staticRoutes: BreadcrumbConfig[] = [
-  { path: "/", label: "Painel", redirectUrl: "#" },
+// Configuração centralizada das rotas
+const routeConfig: RouteConfig[] = [
   {
-    path: "/evaluation",
-    label: "Avaliação",
-    redirectUrl: "#",
-    children: [{ path: "/evaluation/pending", label: "Avaliações Pendentes" }],
+    path: "/",
+    label: () => "Painel",
+    redirectUrl: "/",
   },
   {
-    path: "/patient",
-    label: "Pacientes",
+    path: "/evaluation",
+    label: () => "Avaliação",
+    redirectUrl: "/evaluation",
+    children: [
+      {
+        path: "/evaluation/pending",
+        label: () => "Avaliações Pendentes",
+        redirectUrl: "/evaluation/pending",
+      },
+      {
+        path: "/evaluation/:id",
+        label: () => `Detalhes da Avaliação`,
+        redirectUrl: "/evaluation",
+      },
+    ],
+  },
+  {
+    path: "/patients",
+    label: () => "Pacientes",
     redirectUrl: "#",
     children: [
-      { path: "/patients/add", label: "Adicionar Paciente" },
-      { path: "/patients/search", label: "Buscar Paciente" },
+      {
+        path: "/patients/add",
+        label: () => "Adicionar Paciente",
+        redirectUrl: "/patients/add",
+      },
+      {
+        path: "/patients/search",
+        label: () => "Buscar Paciente",
+        redirectUrl: "/patients/search",
+      },
+      {
+        path: "/patients/:id",
+        label: () => `Detalhes do Paciente`,
+        redirectUrl: "/patients",
+      },
     ],
   },
 ];
 
-// Configuração de rotas dinâmicas
-const dynamicRoutes: BreadcrumbConfig[] = [
-  { path: "/evaluation/:id", label: "Detalhes da Avaliação" },
-  { path: "/patients/:id", label: "Detalhes do Paciente" },
-];
-
-// Função para mesclar rotas dinâmicas e estáticas
-const mergeRoutes = (
-  staticRoutes: BreadcrumbConfig[],
-  dynamicRoutes: BreadcrumbConfig[],
-) => {
-  const isDynamicRoute = (route: string) => route.includes(":");
-
-  return staticRoutes.map((staticRoute) => {
-    // Filtrar rotas dinâmicas que pertencem ao escopo da rota estática
-    const scopedDynamicRoutes = dynamicRoutes.filter((dynamicRoute) =>
-      dynamicRoute.path.startsWith(staticRoute.path),
-    );
-
-    return {
-      ...staticRoute,
-      children: [
-        ...(staticRoute.children ?? []),
-        ...scopedDynamicRoutes.filter(
-          (dynamicRoute) =>
-            !staticRoute.children?.some(
-              (child) => child.path === dynamicRoute.path,
-            ) && isDynamicRoute(dynamicRoute.path),
-        ),
-      ],
-    };
-  });
-};
-
-const breadcrumbConfig = mergeRoutes(staticRoutes, dynamicRoutes);
-
-// Função para encontrar os breadcrumbs de acordo com o caminho
-const findBreadcrumbs = (
+// Função para gerar breadcrumbs a partir do caminho
+const generateBreadcrumbs = (
   pathname: string,
-  routes: BreadcrumbConfig[],
-): BreadcrumbConfig[] | null => {
-  for (const route of routes) {
-    const isDynamic = route.path.includes(":");
-    const pathRegex = new RegExp(`^${route.path.replace(/:\w+/g, "[^/]+")}$`); // Substitui segmentos dinâmicos por regex
+  routes: RouteConfig[],
+): { href: string; label: string }[] => {
+  const segments = pathname.split("/").filter(Boolean); // Divide o caminho
+  const breadcrumbs: { href: string; label: string }[] = [];
+  let currentPath = "";
 
-    if (
-      pathname === route.path ||
-      (!isDynamic && pathname.startsWith(route.path))
-    ) {
-      if (!route.children) return [route];
+  // Itera pelos segmentos do caminho
+  segments.forEach((segment, index) => {
+    currentPath += `/${segment}`;
+    const matchedRoute = routes.find((route) => {
+      const pathRegex = new RegExp(`^${route.path.replace(/:\w+/g, "[^/]+")}$`);
+      return pathRegex.test(currentPath);
+    });
 
-      const childBreadcrumbs = findBreadcrumbs(pathname, route.children);
-      return childBreadcrumbs ? [route, ...childBreadcrumbs] : [route];
+    if (matchedRoute) {
+      const params: Record<string, string> = {};
+      // Extrai parâmetros dinâmicos
+      const dynamicSegments = matchedRoute.path.match(/:\w+/g) ?? [];
+      dynamicSegments.forEach((param) => {
+        const key = param.slice(1);
+        const value = segments[index];
+        params[key] = value ?? "";
+      });
+
+      breadcrumbs.push({
+        href: matchedRoute.redirectUrl ?? currentPath, // Usa redirectUrl se configurado
+        label: matchedRoute.label(params),
+      });
+
+      // Adiciona os filhos para continuar buscando
+      if (matchedRoute.children) {
+        routes = matchedRoute.children;
+      }
     }
+  });
 
-    if (isDynamic && pathRegex.test(pathname)) {
-      return [route];
-    }
-  }
-
-  return null;
+  return breadcrumbs;
 };
 
 export function CustomBreadcrumbs() {
   const pathname = usePathname();
 
-  // Memorize os breadcrumbs para evitar cálculos repetidos
+  // Gera os breadcrumbs dinamicamente
   const breadcrumbs = useMemo(
-    () => findBreadcrumbs(pathname, breadcrumbConfig),
+    () => generateBreadcrumbs(pathname, routeConfig),
     [pathname],
   );
 
-  if (!breadcrumbs || breadcrumbs.length === 0) return null;
+  // Se não houver breadcrumbs, não renderiza
+  if (breadcrumbs.length === 0) return null;
 
   const lastBreadcrumb = breadcrumbs[breadcrumbs.length - 1];
 
@@ -124,16 +132,14 @@ export function CustomBreadcrumbs() {
           const isLast = index === breadcrumbs.length - 1;
 
           return (
-            <React.Fragment key={breadcrumb.path}>
+            <React.Fragment key={breadcrumb.href}>
               <BreadcrumbItem>
                 {isLast ? (
                   <BreadcrumbPage aria-current="page">
                     {breadcrumb.label}
                   </BreadcrumbPage>
                 ) : (
-                  <BreadcrumbLink
-                    href={breadcrumb.redirectUrl ?? breadcrumb.path}
-                  >
+                  <BreadcrumbLink href={breadcrumb.href}>
                     {breadcrumb.label}
                   </BreadcrumbLink>
                 )}
@@ -148,7 +154,7 @@ export function CustomBreadcrumbs() {
       <BreadcrumbList className="flex md:hidden">
         <BreadcrumbItem>
           <BreadcrumbPage aria-current="page">
-            {lastBreadcrumb?.label}
+            {lastBreadcrumb!.label}
           </BreadcrumbPage>
         </BreadcrumbItem>
       </BreadcrumbList>

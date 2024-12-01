@@ -4,28 +4,13 @@ import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { Search } from "lucide-react";
 import { SearchTable } from "~/components/organisms/search-table";
-import { db } from "~/server/db";
+import { api } from "~/trpc/server";
 import { redirect } from "next/navigation";
 import { z } from "zod";
 
-async function searchPatients(queryString: string | string[] | undefined) {
-  return await db.patient.findMany({
-    where: {
-      OR: [
-        { refId: { contains: queryString as string, mode: "insensitive" } },
-        { name: { contains: queryString as string, mode: "insensitive" } },
-      ],
-    },
-    orderBy: { name: "asc" },
-  });
-}
-
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 const searchSchema = z.object({
-  search: z
-    .string()
-    .min(1, "A busca deve ter pelo menos 1 caracter.")
-    .max(100, "A busca deve ter no máximo 100 caracteres."),
+  search: z.string(),
 });
 export default async function SearchPatient({
   searchParams,
@@ -33,11 +18,7 @@ export default async function SearchPatient({
   searchParams: SearchParams;
 }) {
   const { q: queryString } = await searchParams;
-
-  await searchPatients(queryString);
-
-  // Realiza a busca no banco de dados se o parâmetro de busca estiver presente
-  const patients = queryString ? await searchPatients(queryString) : [];
+  const patients = await api.patient.search(queryString as string);
 
   return (
     <div className="flex flex-col gap-4">
@@ -46,6 +27,7 @@ export default async function SearchPatient({
           "use server";
           const search = formData.get("search") as string;
           const { search: parsedSearch } = searchSchema.parse({ search });
+          if (!parsedSearch) redirect("/patients/search");
           redirect(`/patients/search?q=${parsedSearch}`);
         }}
       >
@@ -69,8 +51,10 @@ export default async function SearchPatient({
       {queryString && patients.length > 0 && (
         <SearchTable
           data={patients.map((patient) => ({
-            ...patient,
-            birthDate: patient.birthDate.toISOString(),
+            id: patient.id,
+            birthDate: patient.birthDate,
+            name: patient.name,
+            refId: patient.refId,
           }))}
         />
       )}

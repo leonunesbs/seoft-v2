@@ -118,47 +118,50 @@ export const patientRouter = createTRPCRouter({
       }
     }),
 
-  search: publicProcedure.input(z.string()).query(async ({ input, ctx }) => {
-    try {
-      const patients = await ctx.db.patient.findMany({
-        where: {
-          OR: [
-            {
-              name: {
-                contains: input,
-                mode: "insensitive",
+  search: publicProcedure
+    .input(z.string().optional())
+    .query(async ({ input, ctx }) => {
+      try {
+        const patients = await ctx.db.patient.findMany({
+          where: {
+            OR: [
+              {
+                name: {
+                  contains: input,
+                  mode: "insensitive",
+                },
               },
-            },
-            {
-              refId: {
-                contains: input,
-                mode: "insensitive",
+              {
+                refId: {
+                  contains: input,
+                  mode: "insensitive",
+                },
               },
-            },
-          ],
-        },
-        take: 10,
-        orderBy: { name: "asc" },
-      });
+            ],
+          },
+          take: 10,
+          orderBy: { name: "asc" },
+        });
 
-      return patients.map((patient) => ({
-        refId: patient.refId,
-        name: patient.name,
-        birthDate: patient.birthDate.toLocaleDateString("pt-br", {
-          year: "numeric",
-          month: "2-digit",
-          day: "2-digit",
-          timeZone: "UTC",
-        }),
-      }));
-    } catch (error) {
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Erro ao buscar pacientes. Tente novamente mais tarde.",
-        cause: error,
-      });
-    }
-  }),
+        return patients.map((patient) => ({
+          id: patient.id,
+          refId: patient.refId,
+          name: patient.name,
+          birthDate: patient.birthDate.toLocaleDateString("pt-br", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+            timeZone: "UTC",
+          }),
+        }));
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Erro ao buscar pacientes. Tente novamente mais tarde.",
+          cause: error,
+        });
+      }
+    }),
 
   update: publicProcedure
     .input(

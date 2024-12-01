@@ -103,7 +103,7 @@ export function SearchTable({ data }: { data: Patient[] }) {
                         aria-label={`Editar ${patient.name}`}
                         asChild
                       >
-                        <Link href={`/patients/${patient.refId}`}>
+                        <Link href={`/patients/${patient.id}`}>
                           <MdEdit size={18} />
                         </Link>
                       </Button>
