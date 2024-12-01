@@ -1,26 +1,33 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
-import { Button } from '../ui/button';
+import Link from "next/link";
+import { Button } from "../ui/button";
 
 type SignedLinkProps = {
   fileName: string;
-  action?: 'download' | 'upload';
+  action?: "download" | "upload";
   children?: React.ReactNode;
   className?: string;
 };
 
-export function SignedLink({ fileName, action = 'download', children, className }: SignedLinkProps) {
+export function SignedLink({
+  fileName,
+  action = "download",
+  children,
+  className,
+}: SignedLinkProps) {
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchSignedUrl = async () => {
       try {
-        const response = await fetch(`/api/s3?action=${action}&fileName=${encodeURIComponent(fileName)}`);
-        const data = await response.json();
-        if (action === 'download') {
+        const response = await fetch(
+          `/api/s3?action=${action}&fileName=${encodeURIComponent(fileName)}`,
+        );
+        const data = (await response.json()) as { downloadUrl: string };
+        if (action === "download") {
           setSignedUrl(data.downloadUrl);
         }
       } catch (error) {
@@ -28,7 +35,7 @@ export function SignedLink({ fileName, action = 'download', children, className 
       }
     };
 
-    fetchSignedUrl();
+    void fetchSignedUrl();
   }, [fileName, action]);
 
   if (!signedUrl) {
@@ -36,9 +43,14 @@ export function SignedLink({ fileName, action = 'download', children, className 
   }
 
   return (
-    <Button asChild variant={'link'}>
-      <Link href={signedUrl} target="_blank" rel="noopener noreferrer" className={className}>
-        {children || 'Abrir Documento'}
+    <Button asChild variant={"link"}>
+      <Link
+        href={signedUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+      >
+        {children ?? "Abrir Documento"}
       </Link>
     </Button>
   );
