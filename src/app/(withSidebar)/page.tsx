@@ -82,7 +82,7 @@ export default async function Dashboard() {
             <CardTitle>Avaliações Recentes</CardTitle>
           </CardHeader>
           <CardContent>
-            <Table>
+            <Table className="border">
               <TableHeader>
                 <TableRow>
                   <TableHead>Paciente</TableHead>
