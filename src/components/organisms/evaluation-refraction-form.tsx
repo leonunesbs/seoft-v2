@@ -1,26 +1,5 @@
 "use client";
 
-import { Prisma, Refraction } from "@prisma/client";
-import {
-  MdArrowDownward,
-  MdArrowUpward,
-  MdCancel,
-  MdOutlineFileCopy,
-  MdRemove,
-} from "react-icons/md";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "~/components/ui/tooltip";
 import {
   Card,
   CardContent,
@@ -36,19 +15,40 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import {
+  MdArrowDownward,
+  MdArrowUpward,
+  MdCancel,
+  MdOutlineFileCopy,
+  MdRemove,
+} from "react-icons/md";
+import { Prisma, Refraction } from "@prisma/client";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "~/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "~/components/ui/tooltip";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { toast } from "~/hooks/use-toast";
-import { api } from "~/trpc/react";
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
+import { Loader2 } from "lucide-react";
 import { Separator } from "../ui/separator";
 import { Slider } from "../ui/slider";
+import { api } from "~/trpc/react";
+import { toast } from "~/hooks/use-toast";
+import { useForm } from "react-hook-form";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 const visualAcuityOptions = [
   ">20/20",
@@ -157,7 +157,6 @@ function EyeRefractionList({
     <div className="flex w-full flex-col gap-2">
       <div className="flex items-center">
         <Badge className="mr-2 w-10">{eye}</Badge>
-        <h3 className="text-lg font-semibold">Refração</h3>
       </div>
       {refractions.length > 0 ? (
         <table className="w-full table-auto border-collapse">
