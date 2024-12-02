@@ -97,23 +97,22 @@ export function EvaluationMainForm({
       const presignedResponse = await fetch(
         `/api/s3?action=upload&fileName=${fieldName}-${
           fieldName.includes("OD") ? rightEyeId : leftEyeId
-        }&contentType=${file.type}`,
+        }&contentType=${encodeURIComponent(file.type)}`,
       );
       const { signedUrl, objectUrl } = (await presignedResponse.json()) as {
         signedUrl: string;
         objectUrl: string;
       };
 
-      // Upload file to S3 using presigned URL
       await fetch(signedUrl, {
         method: "PUT",
         body: file,
         headers: { "Content-Type": file.type },
       });
-      // Set the S3 object URL in the form
+
       form.setValue(fieldName, objectUrl);
     } catch (error) {
-      console.error("Error uploading file:", error);
+      console.error("Erro ao fazer upload do arquivo:", error);
     }
   };
 
@@ -759,30 +758,34 @@ export function EvaluationMainForm({
             <CardTitle className="flex justify-between gap-1">
               OCT
               <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton fileName={`octOD-${rightEyeId}`}>
-                        OD
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OD</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton fileName={`octOS-${leftEyeId}`}>
-                        OE
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OE</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {form.getValues("octOD") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton fileName={`octOD-${rightEyeId}`}>
+                          OD
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OD</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {form.getValues("octOS") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton fileName={`octOS-${leftEyeId}`}>
+                          OE
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OE</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
             </CardTitle>
           </CardHeader>
@@ -842,34 +845,38 @@ export function EvaluationMainForm({
             <CardTitle className="flex justify-between gap-1">
               Retinografia
               <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton
-                        fileName={`retinographyOD-${rightEyeId}`}
-                      >
-                        OD
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OD</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton
-                        fileName={`retinographyOS-${leftEyeId}`}
-                      >
-                        OE
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OE</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {form.getValues("retinographyOD") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton
+                          fileName={`retinographyOD-${rightEyeId}`}
+                        >
+                          OD
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OD</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {form.getValues("retinographyOS") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton
+                          fileName={`retinographyOS-${leftEyeId}`}
+                        >
+                          OE
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OE</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
             </CardTitle>
           </CardHeader>
@@ -929,32 +936,38 @@ export function EvaluationMainForm({
             <CardTitle className="flex justify-between gap-1">
               Campo Visual
               <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton
-                        fileName={`visualFieldOD-${rightEyeId}`}
-                      >
-                        OD
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OD</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton fileName={`visualFieldOS-${leftEyeId}`}>
-                        OE
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OE</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {form.getValues("visualFieldOD") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton
+                          fileName={`visualFieldOD-${rightEyeId}`}
+                        >
+                          OD
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OD</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {form.getValues("visualFieldOS") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton
+                          fileName={`visualFieldOS-${leftEyeId}`}
+                        >
+                          OE
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OE</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
             </CardTitle>
           </CardHeader>
@@ -1014,32 +1027,38 @@ export function EvaluationMainForm({
             <CardTitle className="flex justify-between gap-1">
               Angiografia
               <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton
-                        fileName={`angiographyOD-${rightEyeId}`}
-                      >
-                        OD
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OD</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton fileName={`angiographyOS-${leftEyeId}`}>
-                        OE
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OE</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {form.getValues("angiographyOD") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton
+                          fileName={`angiographyOD-${rightEyeId}`}
+                        >
+                          OD
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OD</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {form.getValues("angiographyOS") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton
+                          fileName={`angiographyOS-${leftEyeId}`}
+                        >
+                          OE
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OE</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
             </CardTitle>
           </CardHeader>
@@ -1099,30 +1118,34 @@ export function EvaluationMainForm({
             <CardTitle className="flex justify-between gap-1">
               TC de Córnea
               <div className="flex gap-2">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton fileName={`ctCorneaOD-${rightEyeId}`}>
-                        OD
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OD</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <AccessFileButton fileName={`ctCorneaOS-${leftEyeId}`}>
-                        OE
-                      </AccessFileButton>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Acessar arquivo OE</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
+                {form.getValues("ctCorneaOD") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton fileName={`ctCorneaOD-${rightEyeId}`}>
+                          OD
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OD</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+                {form.getValues("ctCorneaOS") && (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <AccessFileButton fileName={`ctCorneaOS-${leftEyeId}`}>
+                          OE
+                        </AccessFileButton>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Acessar arquivo OE</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
               </div>
             </CardTitle>
           </CardHeader>
