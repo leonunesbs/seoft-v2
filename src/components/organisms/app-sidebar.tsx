@@ -61,7 +61,7 @@ export function AppSidebar({
         icon: <MdOutlineArchive size={18} />,
         items: [
           {
-            title: "Em andamento",
+            title: "Pendentes",
             url: "/evaluations/pending",
             icon: (
               <HydrateClient>
