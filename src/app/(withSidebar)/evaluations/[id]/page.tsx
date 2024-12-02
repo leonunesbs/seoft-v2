@@ -23,14 +23,22 @@ export default async function EvaluationPage({ params }: { params: Params }) {
             include: {
               logs: true,
               refraction: true,
-              surgeries: true,
+              surgeries: {
+                orderBy: {
+                  date: "asc",
+                },
+              },
             },
           },
           rightEye: {
             include: {
               logs: true,
               refraction: true,
-              surgeries: true,
+              surgeries: {
+                orderBy: {
+                  date: "asc",
+                },
+              },
             },
           },
         },

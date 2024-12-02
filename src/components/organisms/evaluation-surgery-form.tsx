@@ -77,7 +77,7 @@ function SurgeryItem({ surgery, eye, onDelete, isLoading }: SurgeryItemProps) {
         {surgery.notes && (
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger type="button">
                 <MdOutlineInfo size={18} />
               </TooltipTrigger>
               <TooltipContent>
@@ -162,11 +162,6 @@ export function EvaluationSurgeryForm({
       eye: "OE",
     })),
   ]);
-
-  // Ordena as cirurgias por data (ascendente)
-  combinedSurgeries.sort(
-    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
-  );
 
   // Mutations do tRPC
   const createSurgeryMutation = api.surgery.create.useMutation({
