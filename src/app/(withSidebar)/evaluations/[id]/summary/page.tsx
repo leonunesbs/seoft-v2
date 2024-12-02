@@ -1,5 +1,3 @@
-// pages/evaluations/[id]/summary.tsx
-
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import {
   Table,
@@ -13,7 +11,6 @@ import {
 import { notFound } from "next/navigation";
 import { CopyPromptButton } from "~/components/atoms/copy-prompt-button";
 import { ReopenEvaluationButton } from "~/components/atoms/reopen-evaluation-button";
-import { SignedLink } from "~/components/atoms/signed-link";
 import { Separator } from "~/components/ui/separator";
 import { db } from "~/server/db";
 
@@ -112,6 +109,7 @@ export default async function EvaluationSummaryPage({
   if (!evaluation) {
     notFound();
   }
+
   const { patient, collaborator, clinic, eyes } = evaluation;
 
   // Função para calcular a idade
@@ -126,22 +124,53 @@ export default async function EvaluationSummaryPage({
     return age;
   };
 
-  // Função para verificar se um texto é um URL válido
-  const isValidUrl = (text: string) => {
-    try {
-      const url = new URL(text);
-      return url.hostname === "seoft-bucket.s3.amazonaws.com";
-    } catch {
-      return false;
-    }
+  // Função para determinar a melhor refração com base na acuidade visual
+  const getBestRefraction = (refractions: any[]) => {
+    return refractions.reduce((best, current) => {
+      if (
+        !best ||
+        (current.visualAcuity &&
+          (!best.visualAcuity || current.visualAcuity > best.visualAcuity))
+      ) {
+        return current;
+      }
+      return best;
+    }, null);
   };
 
-  // Função para extrair o identificador completo do arquivo
-  const extractFileIdentifier = (url: string) => {
-    const match = /seoft-bucket\.s3\.amazonaws\.com\/(.+)/.exec(url);
-    return match ? match[1] : url; // Retorna o caminho completo após o domínio
+  // Melhor refração para cada olho
+  const bestRightRefraction = getBestRefraction(
+    eyes?.rightEye?.refraction || [],
+  );
+  const bestLeftRefraction = getBestRefraction(eyes?.leftEye?.refraction || []);
+
+  const bestRightRefractionSphericalString =
+    parseFloat(bestRightRefraction.spherical) > 0
+      ? "+" + parseFloat(bestRightRefraction.spherical).toFixed(2)
+      : parseFloat(bestRightRefraction.spherical).toFixed(2);
+  const bestRightRefractionCylinderString =
+    parseFloat(bestRightRefraction.cylinder) > 0
+      ? "+" + parseFloat(bestRightRefraction.cylinder).toFixed(2)
+      : parseFloat(bestRightRefraction.cylinder).toFixed(2);
+  const bestRightRefractionAxisString = `${bestRightRefraction.axis}º`;
+
+  const bestLeftRefractionSphericalString =
+    parseFloat(bestLeftRefraction.spherical) > 0
+      ? "+" + parseFloat(bestLeftRefraction.spherical).toFixed(2)
+      : parseFloat(bestLeftRefraction.spherical).toFixed(2);
+  const bestLeftRefractionCylinderString =
+    parseFloat(bestLeftRefraction.cylinder) > 0
+      ? "+" + parseFloat(bestLeftRefraction.cylinder).toFixed(2)
+      : parseFloat(bestLeftRefraction.cylinder).toFixed(2);
+  const bestLeftRefractionAxisString = `${bestLeftRefraction.axis}º`;
+
+  // Função para formatar data
+  const formatDate = (date: Date | string | null | undefined) => {
+    if (!date) return "";
+    return new Date(date).toLocaleDateString("pt-BR");
   };
-  // Filtra os logs para ocultar aqueles com dados em branco
+
+  // Logs dos olhos
   const rightEyeLogs =
     eyes?.rightEye?.logs?.filter(
       (log) => log.details && log.details.trim() !== "",
@@ -151,11 +180,7 @@ export default async function EvaluationSummaryPage({
       (log) => log.details && log.details.trim() !== "",
     ) ?? [];
 
-  // Obtém a refração mais recente para cada olho
-  const latestRightRefraction = eyes?.rightEye?.refraction?.[0];
-  const latestLeftRefraction = eyes?.leftEye?.refraction?.[0];
-
-  // Obtém as cirurgias de todas as avaliações do paciente
+  // Cirurgias dos olhos
   const rightEyeSurgeries = patient.evaluations.flatMap(
     (evalData) => evalData.eyes?.rightEye?.surgeries ?? [],
   );
@@ -163,7 +188,15 @@ export default async function EvaluationSummaryPage({
     (evalData) => evalData.eyes?.leftEye?.surgeries ?? [],
   );
 
-  // Função para gerar o conteúdo final usando a template string
+  // Histórico de avaliações do paciente
+  const patientEvaluations = patient.evaluations
+    .filter((ev) => ev.done && ev.id !== evaluation.id)
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+    );
+
+  // Função para gerar o conteúdo para o botão de copiar
   const generateOutput = () => {
     let output = "";
 
@@ -173,213 +206,122 @@ export default async function EvaluationSummaryPage({
       return new Date(date).toLocaleDateString("pt-BR");
     };
 
-    // Função para ocultar informações pessoais
-    const returnText = (text: string) => {
-      return text;
-    };
+    // Seção 1: Informações do Paciente
+    output += `**Informações do Paciente**\n`;
+    output += `- Nome: ${patient.name || "N/A"}\n`;
+    output += `- Idade: ${
+      patient.birthDate
+        ? calculateAge(patient.birthDate.toISOString()) + " anos"
+        : "N/A"
+    }\n`;
+    output += `- Histórico de Avaliações: ${
+      patientEvaluations.length > 0
+        ? `${patientEvaluations.length} avaliações concluídas`
+        : "N/A"
+    }\n`;
 
-    // Seção 1: Ambulatório
-    output += `1. **Ambulatório**\n`;
+    // Seção 2: Detalhes do Atendimento
+    output += `\n**Detalhes do Atendimento**\n`;
+    output += `- Data: ${
+      evaluation.createdAt ? formatDate(evaluation.createdAt) : "N/A"
+    }\n`;
+    output += `- Colaborador: ${collaborator.name || "N/A"}\n`;
+    output += `- Ambulatório: ${clinic?.name || "N/A"}\n`;
+    output += `- Dados Clínicos: ${evaluation.clinicalData?.trim() || "N/A"}\n`;
+    output += `- Diagnóstico: ${evaluation.diagnosis || "N/A"}\n`;
+    output += `- Tratamento: ${evaluation.treatment || "N/A"}\n`;
+    output += `- Acompanhamento: ${evaluation.followUp || "N/A"}\n`;
+    output += `- Próxima Consulta: ${evaluation.nextAppointment || "N/A"}\n`;
 
-    const clinicFields = [];
+    // Seção 3: Olho Direito
+    output += `\n**Olho Direito (OD)**\n`;
 
-    if (clinic?.name) {
-      clinicFields.push(`- Nome do ambulatório: ${clinic.name}`);
-    }
-
-    if (clinic?.collaborators && clinic.collaborators.length > 0) {
-      clinicFields.push(
-        `- Colaboradores:\n${clinic.collaborators
-          .map(
-            (colab) =>
-              `   - ${returnText(colab.collaborator.name)} (CRM: ${colab.collaborator.crm || ""}, Função: ${
-                colab.collaborator.role || ""
-              })`,
-          )
-          .join("\n")}`,
-      );
-    }
-
-    output += clinicFields.join("\n") || "- N/A";
-
-    // Seção 2: Cirurgias
-    output += `\n\n2. **Cirurgias**\n`;
-
-    const surgeriesFields = [];
-
-    const sortedRightEyeSurgeries = rightEyeSurgeries.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
-    const sortedLeftEyeSurgeries = leftEyeSurgeries.sort(
-      (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-    );
-
-    if (sortedRightEyeSurgeries.length > 0) {
-      surgeriesFields.push(
-        `- Cirurgias olho direito:\n${sortedRightEyeSurgeries
-          .map(
-            (surgery) =>
-              `   - ${surgery.procedure || ""}, notas: ${surgery.notes ?? ""}`,
-          )
-          .join("\n")}`,
-      );
-    }
-
-    if (sortedLeftEyeSurgeries.length > 0) {
-      surgeriesFields.push(
-        `- Cirurgias olho esquerdo:\n${sortedLeftEyeSurgeries
-          .map(
-            (surgery) =>
-              `   - ${surgery.procedure || ""}, notas: ${surgery.notes ?? ""}`,
-          )
-          .join("\n")}`,
-      );
-    }
-
-    output += surgeriesFields.join("\n") || "- N/A";
-
-    // Seção 3: Dados Clínicos
-    output += `\n\n3. **Dados Clínicos**\n`;
-
-    const clinicalDataFields = [];
-
-    if (patient.name) {
-      clinicalDataFields.push(`- Paciente: ${returnText(patient.name)}`);
-    }
-
-    if (patient.birthDate) {
-      clinicalDataFields.push(
-        `- Data de nascimento: ${formatDate(patient.birthDate)}`,
-      );
-    }
-
-    if (patient.refId) {
-      clinicalDataFields.push(`- ID do prontuário: ${patient.refId}`);
-    }
-
-    const previousEvaluations = patient.evaluations
-      ?.filter((ev) => ev.done && ev.id !== evaluation.id)
-      .sort(
-        (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-      )
-      .slice(0, 5)
-      .map(
-        (ev) =>
-          `   - ${formatDate(ev.createdAt)}: Diagnóstico: ${ev.diagnosis ?? ""}`,
-      )
-      .join("\n");
-
-    if (previousEvaluations) {
-      clinicalDataFields.push(
-        `- Avaliações anteriores:\n${previousEvaluations}`,
-      );
-    }
-
-    output += clinicalDataFields.join("\n") || "- N/A";
-
-    // Seção 4: Dados Clínicos Detalhados
-    output += `\n\n4. **Dados Clínicos Detalhados**\n`;
-    output += evaluation.clinicalData?.trim()
-      ? `- ${evaluation.clinicalData}`
-      : "- N/A";
-
-    // Seção 5: Exame Físico
-    output += `\n\n5. **Exame Físico**\n`;
-
-    const physicalExamFields = [];
-
-    if (latestRightRefraction) {
-      const refractionData = [];
-      if (latestRightRefraction.spherical !== undefined)
-        refractionData.push(`Esférico: ${latestRightRefraction.spherical}`);
-      if (latestRightRefraction.cylinder !== undefined)
-        refractionData.push(`Cilíndrico: ${latestRightRefraction.cylinder}`);
-      if (latestRightRefraction.axis !== undefined)
-        refractionData.push(`Eixo: ${latestRightRefraction.axis}`);
-      if (latestRightRefraction.visualAcuity)
-        refractionData.push(
-          `Acuidade Visual: ${latestRightRefraction.visualAcuity}`,
-        );
-      physicalExamFields.push(
-        `- Refração olho direito:\n   - ${refractionData.join("\n   - ")}`,
-      );
-    }
-
-    if (latestLeftRefraction) {
-      const refractionData = [];
-      if (latestLeftRefraction.spherical !== undefined)
-        refractionData.push(`Esférico: ${latestLeftRefraction.spherical}`);
-      if (latestLeftRefraction.cylinder !== undefined)
-        refractionData.push(`Cilíndrico: ${latestLeftRefraction.cylinder}`);
-      if (latestLeftRefraction.axis !== undefined)
-        refractionData.push(`Eixo: ${latestLeftRefraction.axis}`);
-      if (latestLeftRefraction.visualAcuity)
-        refractionData.push(
-          `Acuidade Visual: ${latestLeftRefraction.visualAcuity}`,
-        );
-      physicalExamFields.push(
-        `- Refração olho esquerdo:\n   - ${refractionData.join("\n   - ")}`,
-      );
+    if (bestRightRefraction) {
+      output += `- Melhor Acuidade Visual: ${
+        bestRightRefraction.visualAcuity || "N/A"
+      }\n`;
+      output += `- Refração:\n`;
+      output += `   - Esférico: ${bestRightRefractionSphericalString}\n`;
+      output += `   - Cilíndrico: ${bestRightRefractionCylinderString}\n`;
+      output += `   - Eixo: ${bestRightRefractionAxisString}\n`;
+    } else {
+      output += `- Nenhuma refração disponível.\n`;
     }
 
     if (rightEyeLogs.length > 0) {
-      const sortedRightEyeLogs = rightEyeLogs.sort(
-        (a, b) =>
-          new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime(),
-      );
-      physicalExamFields.push(
-        `- Logs olho direito:\n${sortedRightEyeLogs
-          .map((log) => `   - ${log.type || ""} - ${log.details ?? ""}`)
-          .join("\n")}`,
-      );
+      output += `- Logs:\n`;
+      rightEyeLogs.forEach((log) => {
+        output += `   - ${log.type || "N/A"}: ${log.details || "N/A"}\n`;
+      });
+    } else {
+      output += `- Nenhum log disponível.\n`;
+    }
+
+    if (rightEyeSurgeries.length > 0) {
+      output += `- Histórico de Cirurgias:\n`;
+      rightEyeSurgeries.forEach((surgery) => {
+        output += `   - Procedimento: ${surgery.procedure || "N/A"}\n`;
+        output += `     Data: ${
+          surgery.date ? formatDate(surgery.date) : "N/A"
+        }\n`;
+        output += `     Notas: ${surgery.notes || "N/A"}\n`;
+      });
+    } else {
+      output += `- Nenhum histórico de cirurgias.\n`;
+    }
+
+    // Seção 4: Olho Esquerdo
+    output += `\n**Olho Esquerdo (OE)**\n`;
+
+    if (bestLeftRefraction) {
+      output += `- Melhor Acuidade Visual: ${
+        bestLeftRefraction.visualAcuity || "N/A"
+      }\n`;
+      output += `- Refração:\n`;
+      output += `   - Esférico: ${bestLeftRefractionSphericalString}\n`;
+      output += `   - Cilíndrico: ${bestLeftRefractionCylinderString}\n`;
+      output += `   - Eixo: ${bestLeftRefractionAxisString}\n`;
+    } else {
+      output += `- Nenhuma refração disponível.\n`;
     }
 
     if (leftEyeLogs.length > 0) {
-      const sortedLeftEyeLogs = leftEyeLogs.sort(
-        (a, b) =>
-          new Date(b.recordedAt).getTime() - new Date(a.recordedAt).getTime(),
-      );
-      physicalExamFields.push(
-        `- Logs olho esquerdo:\n${sortedLeftEyeLogs
-          .map((log) => `   - ${log.type || ""} - ${log.details ?? ""}`)
-          .join("\n")}`,
-      );
+      output += `- Logs:\n`;
+      leftEyeLogs.forEach((log) => {
+        output += `   - ${log.type || "N/A"}: ${log.details || "N/A"}\n`;
+      });
+    } else {
+      output += `- Nenhum log disponível.\n`;
     }
 
-    output += physicalExamFields.join("\n") || "- N/A";
+    if (leftEyeSurgeries.length > 0) {
+      output += `- Histórico de Cirurgias:\n`;
+      leftEyeSurgeries.forEach((surgery) => {
+        output += `   - Procedimento: ${surgery.procedure || "N/A"}\n`;
+        output += `     Data: ${
+          surgery.date ? formatDate(surgery.date) : "N/A"
+        }\n`;
+        output += `     Notas: ${surgery.notes || "N/A"}\n`;
+      });
+    } else {
+      output += `- Nenhum histórico de cirurgias.\n`;
+    }
 
-    // Seção 6: Impressão Diagnóstica
-    output += `\n\n6. **Impressão Diagnóstica**\n`;
-    output +=
-      evaluation.diagnosis && evaluation.diagnosis.trim() !== ""
-        ? `- ${evaluation.diagnosis}`
-        : "- N/A";
-
-    // Seção 7: Tratamento
-    output += `\n\n7. **Tratamento**\n`;
-    output +=
-      evaluation.treatment && evaluation.treatment.trim() !== ""
-        ? `- ${evaluation.treatment}`
-        : "- N/A";
-
-    // Seção 8: Acompanhamento
-    output += `\n\n8. **Acompanhamento**\n`;
-    output +=
-      evaluation.followUp && evaluation.followUp.trim() !== ""
-        ? `- ${evaluation.followUp}`
-        : "- N/A";
-
-    // Seção 9: Retorno
-    output += `\n\n9. **Retorno**\n`;
-    output += evaluation.nextAppointment
-      ? `- Próxima consulta: ${evaluation.nextAppointment}`
-      : "- N/A";
+    // Seção 5: Histórico de Avaliações
+    if (patientEvaluations.length > 0) {
+      output += `\n**Histórico de Avaliações**\n`;
+      patientEvaluations.forEach((ev) => {
+        output += `- Data: ${formatDate(ev.createdAt)}\n`;
+        output += `  Diagnóstico: ${ev.diagnosis || "N/A"}\n`;
+      });
+    } else {
+      output += `\n**Histórico de Avaliações**\n- Nenhum histórico disponível.\n`;
+    }
 
     return output;
   };
 
-  // Gere o conteúdo final usando a template string
+  // Gere o conteúdo para o botão de copiar
   const prompt = generateOutput();
 
   return (
@@ -389,6 +331,7 @@ export default async function EvaluationSummaryPage({
         <div className="flex gap-2">
           {/* Botão para reabrir a avaliação */}
           <ReopenEvaluationButton evaluation={evaluation} />
+          {/* Botão para copiar o prompt */}
           <CopyPromptButton prompt={prompt} />
         </div>
       </div>
@@ -405,13 +348,13 @@ export default async function EvaluationSummaryPage({
           <p>
             <strong>Idade:</strong>{" "}
             {patient.birthDate
-              ? calculateAge(patient.birthDate.toISOString())
+              ? calculateAge(patient.birthDate.toISOString()) + " anos"
               : "N/A"}
           </p>
           <p>
             <strong>Histórico de Avaliações:</strong>{" "}
-            {patient.evaluations.length > 0
-              ? `${patient.evaluations.length} avaliações concluídas`
+            {patientEvaluations.length > 0
+              ? `${patientEvaluations.length} avaliações concluídas`
               : "N/A"}
           </p>
         </CardContent>
@@ -425,40 +368,41 @@ export default async function EvaluationSummaryPage({
         <CardContent className="space-y-2 text-sm">
           <p>
             <strong>Data:</strong>{" "}
-            {evaluation.createdAt
-              ? new Date(evaluation.createdAt).toLocaleDateString("pt-BR")
-              : "N/A"}
+            {evaluation.createdAt ? formatDate(evaluation.createdAt) : "N/A"}
           </p>
           <p>
             <strong>Colaborador:</strong> {collaborator.name || "N/A"}
           </p>
           <p>
-            <strong>Ambulatório:</strong> {clinic?.name ?? "N/A"}{" "}
+            <strong>Ambulatório:</strong> {clinic?.name || "N/A"}{" "}
             {clinic?.collaborators &&
               clinic.collaborators.length > 0 &&
-              `(${clinic?.collaborators.map((c) => c.collaborator.name).join(", ")})`}
+              `(${clinic?.collaborators
+                .map((c) => c.collaborator.name)
+                .join(", ")})`}
           </p>
           <p>
-            <strong>Dados Clínicos:</strong> {evaluation.clinicalData ?? "N/A"}
+            <strong>Dados Clínicos:</strong>{" "}
+            {evaluation.clinicalData?.trim() || "N/A"}
           </p>
           <p>
-            <strong>Diagnóstico:</strong> {evaluation.diagnosis ?? "N/A"}
+            <strong>Diagnóstico:</strong> {evaluation.diagnosis || "N/A"}
           </p>
           <p>
-            <strong>Tratamento:</strong> {evaluation.treatment ?? "N/A"}
+            <strong>Tratamento:</strong> {evaluation.treatment || "N/A"}
           </p>
           <p>
-            <strong>Acompanhamento:</strong> {evaluation.followUp ?? "N/A"}
+            <strong>Acompanhamento:</strong> {evaluation.followUp || "N/A"}
           </p>
           <p>
             <strong>Próxima Consulta:</strong>{" "}
-            {evaluation.nextAppointment ?? "N/A"}
+            {evaluation.nextAppointment || "N/A"}
           </p>
         </CardContent>
       </Card>
 
       {/* Dados dos Olhos, Acuidade Visual, Refração e Históricos de Cirurgias */}
-      <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-6 sm:flex-row">
         {/* Olho Direito */}
         <Card>
           <CardHeader>
@@ -466,22 +410,25 @@ export default async function EvaluationSummaryPage({
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Acuidade Visual e Refração */}
-            {latestRightRefraction && (
+            {bestRightRefraction ? (
               <div className="flex flex-col gap-1">
                 <p>
-                  <strong>Acuidade Visual:</strong>{" "}
-                  {latestRightRefraction.visualAcuity ?? "N/A"}
+                  <strong>Melhor Acuidade Visual:</strong>{" "}
+                  {bestRightRefraction.visualAcuity || "N/A"}
                 </p>
                 <p>
                   <strong>Refração:</strong>{" "}
-                  {`Esférico: ${latestRightRefraction.spherical ?? "N/A"}, Cilíndrico: ${
-                    latestRightRefraction.cylinder ?? "N/A"
-                  }, Eixo: ${latestRightRefraction.axis ?? "N/A"}`}
+                  {`Esférico: ${bestRightRefractionSphericalString ?? "N/A"}, Cilíndrico: ${
+                    bestRightRefractionCylinderString ?? "N/A"
+                  }, Eixo: ${bestRightRefractionAxisString ?? "N/A"}`}
                 </p>
               </div>
+            ) : (
+              <p>Nenhuma refração disponível.</p>
             )}
 
-            {/* Logs */}
+            <Separator />
+            <h3 className="font-semibold">Logs do Olho Direito</h3>
             {rightEyeLogs.length > 0 ? (
               <Table>
                 <TableHeader>
@@ -491,19 +438,10 @@ export default async function EvaluationSummaryPage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {rightEyeLogs.map(async (log, index) => (
+                  {rightEyeLogs.map((log, index) => (
                     <TableRow key={index}>
                       <TableCell>{log.type || "N/A"}</TableCell>
-                      <TableCell>
-                        {log.details && isValidUrl(log.details) ? (
-                          <SignedLink
-                            fileName={extractFileIdentifier(log.details)!}
-                            action="download"
-                          />
-                        ) : (
-                          (log.details ?? "N/A")
-                        )}
-                      </TableCell>
+                      <TableCell>{log.details || "N/A"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -513,37 +451,30 @@ export default async function EvaluationSummaryPage({
             )}
 
             <Separator />
-            {/* Histórico de Cirurgias */}
+            <h3 className="font-semibold">Histórico de Cirurgias</h3>
             {rightEyeSurgeries.length > 0 ? (
-              <div className="flex flex-col gap-2">
-                <h3 className="font-semibold">Histórico de Cirurgias</h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Procedimento</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Notas</TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Procedimento</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Notas</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rightEyeSurgeries.map((surgery, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{surgery.procedure || "N/A"}</TableCell>
+                      <TableCell>
+                        {surgery.date ? formatDate(surgery.date) : "N/A"}
+                      </TableCell>
+                      <TableCell>{surgery.notes || "N/A"}</TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {rightEyeSurgeries.map((surgery, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{surgery.procedure || "N/A"}</TableCell>
-                        <TableCell>
-                          {surgery.date
-                            ? new Date(surgery.date).toLocaleDateString("pt-BR")
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell>{surgery.notes ?? "N/A"}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                  ))}
+                </TableBody>
+              </Table>
             ) : (
-              <span className="text-center">
-                <p>Nenhum histórico de cirurgias</p>
-              </span>
+              <p>Nenhum histórico de cirurgias</p>
             )}
           </CardContent>
         </Card>
@@ -555,22 +486,25 @@ export default async function EvaluationSummaryPage({
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Acuidade Visual e Refração */}
-            {latestLeftRefraction && (
+            {bestLeftRefraction ? (
               <div className="flex flex-col gap-1">
                 <p>
-                  <strong>Acuidade Visual:</strong>{" "}
-                  {latestLeftRefraction.visualAcuity ?? "N/A"}
+                  <strong>Melhor Acuidade Visual:</strong>{" "}
+                  {bestLeftRefraction.visualAcuity || "N/A"}
                 </p>
                 <p>
                   <strong>Refração:</strong>{" "}
-                  {`Esférico: ${latestLeftRefraction.spherical ?? "N/A"}, Cilíndrico: ${
-                    latestLeftRefraction.cylinder ?? "N/A"
-                  }, Eixo: ${latestLeftRefraction.axis ?? "N/A"}`}
+                  {`Esférico: ${bestLeftRefractionCylinderString ?? "N/A"}, Cilíndrico: ${
+                    bestLeftRefractionCylinderString ?? "N/A"
+                  }, Eixo: ${bestLeftRefractionAxisString ?? "N/A"}`}
                 </p>
               </div>
+            ) : (
+              <p>Nenhuma refração disponível.</p>
             )}
 
-            {/* Logs */}
+            <Separator />
+            <h3 className="font-semibold">Logs do Olho Esquerdo</h3>
             {leftEyeLogs.length > 0 ? (
               <Table>
                 <TableHeader>
@@ -580,19 +514,10 @@ export default async function EvaluationSummaryPage({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {leftEyeLogs.map(async (log, index) => (
+                  {leftEyeLogs.map((log, index) => (
                     <TableRow key={index}>
-                      <TableCell>{log.type ?? "N/A"}</TableCell>
-                      <TableCell>
-                        {log.details && isValidUrl(log.details) ? (
-                          <SignedLink
-                            fileName={extractFileIdentifier(log.details)!}
-                            action="download"
-                          />
-                        ) : (
-                          (log.details ?? "N/A")
-                        )}
-                      </TableCell>
+                      <TableCell>{log.type || "N/A"}</TableCell>
+                      <TableCell>{log.details || "N/A"}</TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -600,51 +525,44 @@ export default async function EvaluationSummaryPage({
             ) : (
               <p>Nenhum log disponível</p>
             )}
+
             <Separator />
-            {/* Histórico de Cirurgias */}
+            <h3 className="font-semibold">Histórico de Cirurgias</h3>
             {leftEyeSurgeries.length > 0 ? (
-              <div className="gap2 flex flex-col">
-                <h3 className="font-semibold">Histórico de Cirurgias</h3>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Procedimento</TableHead>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Notas</TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Procedimento</TableHead>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Notas</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {leftEyeSurgeries.map((surgery, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{surgery.procedure || "N/A"}</TableCell>
+                      <TableCell>
+                        {surgery.date ? formatDate(surgery.date) : "N/A"}
+                      </TableCell>
+                      <TableCell>{surgery.notes || "N/A"}</TableCell>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {leftEyeSurgeries.map((surgery, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{surgery.procedure || "N/A"}</TableCell>
-                        <TableCell>
-                          {surgery.date
-                            ? new Date(surgery.date).toLocaleDateString("pt-BR")
-                            : "N/A"}
-                        </TableCell>
-                        <TableCell>{surgery.notes ?? "N/A"}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
+                  ))}
+                </TableBody>
+              </Table>
             ) : (
-              <span className="text-center">
-                <Separator />
-                <p>Nenhum histórico de cirurgias</p>
-              </span>
+              <p>Nenhum histórico de cirurgias</p>
             )}
           </CardContent>
         </Card>
       </div>
 
-      {/* Histórico do Paciente */}
+      {/* Histórico de Avaliações do Paciente */}
       <Card>
         <CardHeader>
-          <CardTitle>Histórico do Paciente</CardTitle>
+          <CardTitle>Histórico de Avaliações</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          {patient.evaluations.length > 0 ? (
+          {patientEvaluations.length > 0 ? (
             <Table>
               <TableHeader>
                 <TableRow>
@@ -653,16 +571,10 @@ export default async function EvaluationSummaryPage({
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {patient.evaluations.map((evalData, index) => (
+                {patientEvaluations.map((ev, index) => (
                   <TableRow key={index}>
-                    <TableCell>
-                      {evalData.createdAt
-                        ? new Date(evalData.createdAt).toLocaleDateString(
-                            "pt-BR",
-                          )
-                        : "N/A"}
-                    </TableCell>
-                    <TableCell>{evalData.diagnosis ?? "N/A"}</TableCell>
+                    <TableCell>{formatDate(ev.createdAt)}</TableCell>
+                    <TableCell>{ev.diagnosis || "N/A"}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

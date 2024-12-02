@@ -172,7 +172,6 @@ export function EvaluationRefractionForm({
     },
   });
 
-  const utils = api.useUtils();
   const router = useRouter();
   const { mutate: createRefraction, isPending: isCreatePending } =
     api.refraction.create.useMutation({
@@ -182,7 +181,6 @@ export function EvaluationRefractionForm({
           description: "A refração foi salva com sucesso.",
         });
         form.reset();
-        utils.refraction.get.invalidate();
         router.refresh();
       },
       onError: () => {
@@ -201,7 +199,6 @@ export function EvaluationRefractionForm({
           title: "Refração deletada!",
           description: "A refração foi deletada com sucesso.",
         });
-        utils.refraction.get.invalidate();
         router.refresh();
       },
       onError: () => {

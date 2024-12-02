@@ -25,10 +25,13 @@ import {
 } from "../ui/tooltip";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useState } from "react"; // Importa useState para gerenciar estados locais
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "~/hooks/use-toast";
+import { api } from "~/trpc/react"; // Importação do cliente tRPC
 import { Badge } from "../ui/badge";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -55,9 +58,10 @@ type SurgeryItemProps = {
   }>;
   eye: string;
   onDelete: (surgeryId: string) => void;
+  isLoading: boolean; // Novo prop para indicar se o botão está em loading
 };
 
-function SurgeryItem({ surgery, eye, onDelete }: SurgeryItemProps) {
+function SurgeryItem({ surgery, eye, onDelete, isLoading }: SurgeryItemProps) {
   return (
     <div className="flex items-center justify-between gap-2">
       <div className="flex gap-1">
@@ -83,8 +87,17 @@ function SurgeryItem({ surgery, eye, onDelete }: SurgeryItemProps) {
           </TooltipProvider>
         )}
       </span>
-      <Button type="button" size="icon" onClick={() => onDelete(surgery.id)}>
-        <MdCancel />
+      <Button
+        type="button"
+        size="icon"
+        onClick={() => onDelete(surgery.id)}
+        disabled={isLoading} // Desativa o botão se estiver carregando
+      >
+        {isLoading ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <MdCancel />
+        )}
       </Button>
     </div>
   );
@@ -126,6 +139,7 @@ export function EvaluationSurgeryForm({
   patientSurgeries,
 }: EvaluationSurgeryFormProps) {
   const router = useRouter();
+  const [deletingSurgeryIds, setDeletingSurgeryIds] = useState<string[]>([]); // Estado local para rastrear quais cirurgias estão sendo deletadas
 
   const form = useForm<SurgeryFormValues>({
     resolver: zodResolver(surgeryFormSchema),
@@ -136,6 +150,7 @@ export function EvaluationSurgeryForm({
       eye: "OD",
     },
   });
+
   // Combina as cirurgias de todas as avaliações
   const combinedSurgeries = patientSurgeries.flatMap((history) => [
     ...history.eyes.rightEye.surgeries.map((surgery) => ({
@@ -148,37 +163,65 @@ export function EvaluationSurgeryForm({
     })),
   ]);
 
-  const handleDelete = async (surgeryId: string) => {
-    try {
-      const response = await fetch(
-        `/api/v1/evaluations/surgery?eyeSurgeryId=${surgeryId}`,
-        {
-          method: "DELETE",
-        },
-      );
+  // Ordena as cirurgias por data (ascendente)
+  combinedSurgeries.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+  );
 
-      if (!response.ok) throw new Error("Erro ao excluir cirurgia.");
+  // Mutations do tRPC
+  const createSurgeryMutation = api.surgery.create.useMutation({
+    onSuccess: () => {
+      toast({
+        title: "Cirurgia adicionada!",
+        description: "A cirurgia foi registrada com sucesso.",
+        variant: "default",
+        duration: 4000,
+      });
+      form.reset();
+      router.refresh();
+    },
+    onError: (error) => {
+      toast({
+        title: "Erro",
+        description: error.message || "Erro ao adicionar cirurgia.",
+        variant: "destructive",
+        duration: 4000,
+      });
+    },
+  });
 
+  const deleteSurgeryMutation = api.surgery.delete.useMutation({
+    onSuccess: () => {
       toast({
         title: "Cirurgia excluída!",
         description: "A cirurgia foi removida com sucesso.",
         variant: "default",
         duration: 4000,
       });
-
       router.refresh();
-    } catch (error) {
+    },
+    onError: (error) => {
       toast({
         title: "Erro",
-        description:
-          error instanceof Error ? error.message : "Erro desconhecido.",
+        description: error.message || "Erro ao excluir cirurgia.",
         variant: "destructive",
         duration: 4000,
       });
+    },
+  });
+
+  const handleDelete = async (surgeryId: string) => {
+    setDeletingSurgeryIds((prev) => [...prev, surgeryId]); // Adiciona o ID ao estado de carregamento
+    try {
+      await deleteSurgeryMutation.mutateAsync(surgeryId);
+    } catch {
+      // O toast de erro já é tratado no onError da mutation
+    } finally {
+      setDeletingSurgeryIds((prev) => prev.filter((id) => id !== surgeryId)); // Remove o ID após a operação
     }
   };
 
-  const onSubmit = async (data: SurgeryFormValues) => {
+  const onSubmit = (data: SurgeryFormValues) => {
     const eyeId =
       data.eye === "OD"
         ? evaluation.eyes?.rightEye?.id
@@ -194,38 +237,12 @@ export function EvaluationSurgeryForm({
       return;
     }
 
-    try {
-      const response = await fetch(`/api/v1/evaluations/surgery`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          eyeId,
-          procedure: data.procedure,
-          date: data.date,
-          notes: data.notes,
-        }),
-      });
-
-      if (!response.ok) throw new Error("Erro ao adicionar cirurgia.");
-
-      toast({
-        title: "Cirurgia adicionada!",
-        description: "A cirurgia foi registrada com sucesso.",
-        variant: "default",
-        duration: 4000,
-      });
-
-      form.reset();
-      router.refresh();
-    } catch (error) {
-      toast({
-        title: "Erro",
-        description:
-          error instanceof Error ? error.message : "Erro desconhecido.",
-        variant: "destructive",
-        duration: 4000,
-      });
-    }
+    createSurgeryMutation.mutate({
+      eyeId,
+      procedure: data.procedure,
+      date: data.date,
+      notes: data.notes,
+    });
   };
 
   return (
@@ -244,6 +261,7 @@ export function EvaluationSurgeryForm({
                   surgery={surgery}
                   eye={surgery.eye}
                   onDelete={handleDelete}
+                  isLoading={deletingSurgeryIds.includes(surgery.id)} // Passa o estado de loading individual
                 />
               ))
             ) : (
@@ -323,8 +341,16 @@ export function EvaluationSurgeryForm({
             />
           </CardContent>
           <CardFooter>
-            <Button type="submit" className="w-full">
-              Adicionar Cirurgia
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={createSurgeryMutation.isPending}
+            >
+              {createSurgeryMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Adicionar Cirurgia"
+              )}
             </Button>
           </CardFooter>
         </Card>

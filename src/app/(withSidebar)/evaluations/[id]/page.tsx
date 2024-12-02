@@ -1,7 +1,7 @@
 import { notFound, redirect } from "next/navigation";
 
-import { EvaluationForm } from "~/components/organisms/evaluation-form";
 import { PageHeading } from "~/components/atoms/page-heading";
+import { EvaluationForm } from "~/components/organisms/evaluation-form";
 import { db } from "~/server/db";
 
 type Params = Promise<{ id: string }>;
@@ -90,12 +90,20 @@ export default async function EvaluationPage({ params }: { params: Params }) {
         include: {
           leftEye: {
             include: {
-              surgeries: true,
+              surgeries: {
+                orderBy: {
+                  date: "asc",
+                },
+              },
             },
           },
           rightEye: {
             include: {
-              surgeries: true,
+              surgeries: {
+                orderBy: {
+                  date: "asc",
+                },
+              },
             },
           },
         },
