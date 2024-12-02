@@ -48,7 +48,7 @@ const mainFormSchema = z.object({
   retinographyOD: z.any().optional(),
   retinographyOS: z.any().optional(),
   clinicalData: z.string().min(1, "Dados clínicos são obrigatórios."),
-  diagnosis: z.string().optional(),
+  diagnosis: z.string().min(1, "Diagnóstico é obrigatório."),
   treatment: z.string().optional(),
   followUp: z.string().optional(),
   nextAppointment: z.string().optional(),

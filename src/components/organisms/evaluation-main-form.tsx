@@ -14,9 +14,15 @@ import {
   FormLabel,
   FormMessage,
 } from "../ui/form";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 
-import { type Prisma } from "@prisma/client";
-import { type UseFormReturn } from "react-hook-form";
+import { Prisma } from "@prisma/client";
+import { UseFormReturn } from "react-hook-form";
 import { AccessFileButton } from "../atoms/access-file-button";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
@@ -44,7 +50,7 @@ type EvaluationFormValues = {
   retinographyOD?: FileList | null;
   retinographyOS?: FileList | null;
   clinicalData: string;
-  diagnosis?: string;
+  diagnosis: string;
   treatment?: string;
   followUp?: string;
   nextAppointment?: string;
@@ -89,7 +95,9 @@ export function EvaluationMainForm({
   ) => {
     try {
       const presignedResponse = await fetch(
-        `/api/s3?action=upload&fileName=${fieldName}-${fieldName.includes("OD") ? rightEyeId : leftEyeId}&contentType=${file.type}`,
+        `/api/s3?action=upload&fileName=${fieldName}-${
+          fieldName.includes("OD") ? rightEyeId : leftEyeId
+        }&contentType=${file.type}`,
       );
       const { signedUrl, objectUrl } = (await presignedResponse.json()) as {
         signedUrl: string;
@@ -125,15 +133,15 @@ export function EvaluationMainForm({
 
       const fieldStr = field.toString();
 
-      // Verifica se o campo é específico de um olho (termina com 'OD' ou 'OS')
+      // Check if the field is specific to an eye (ends with 'OD' or 'OS')
       if (fieldStr.endsWith("OD") || fieldStr.endsWith("OS")) {
         const eyeSide = fieldStr.endsWith("OD") ? "rightEye" : "leftEye";
         const eyeLogs = lastEvaluationData.eyes?.[eyeSide]?.logs;
 
-        // Extrai o tipo de log a partir do nome do campo
+        // Extract the log type from the field name
         const logTypeRaw = fieldStr.substring(0, fieldStr.length - 2);
 
-        // Mapeamento de nomes de campos para tipos de logs
+        // Mapping of field names to log types
         const fieldToLogTypeMap: Record<string, string> = {
           tonometry: "TONOMETRY",
           fundoscopy: "FUNDOSCOPY",
@@ -145,7 +153,7 @@ export function EvaluationMainForm({
           visualField: "VISUAL_FIELD",
           angiography: "ANGIOGRAPHY",
           ctCornea: "CT_CORNEA",
-          // Adicione outros mapeamentos conforme necessário
+          // Add other mappings as needed
         };
 
         const logType =
@@ -155,13 +163,14 @@ export function EvaluationMainForm({
         const log = eyeLogs?.find((l) => l.type === logType);
         value = log?.details ?? "";
       } else {
-        // Para campos não específicos de olho
-        value = (lastEvaluationData as never)[field] || "";
+        // For fields not specific to an eye
+        value = (lastEvaluationData as any)[field] || "";
       }
 
       form.setValue(field, value as string | FileList | null | undefined);
     });
   };
+
   const handleClearFields = (fields: Array<keyof EvaluationFormValues>) => {
     fields.forEach((field) => form.setValue(field, ""));
   };
@@ -194,36 +203,69 @@ export function EvaluationMainForm({
             <CardTitle className="flex justify-between gap-1">
               Biomicroscopia
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    handleCopyLastData(["biomicroscopyOD", "biomicroscopyOS"])
-                  }
-                >
-                  <MdOutlineFileCopy size={18} />
-                </Button>
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    handleCopyODToOE("biomicroscopyOD", "biomicroscopyOS")
-                  }
-                >
-                  <MdSwitchLeft size={18} />
-                </Button>
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    handleClearFields(["biomicroscopyOD", "biomicroscopyOS"])
-                  }
-                >
-                  <MdDeleteOutline size={18} />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyLastData([
+                            "biomicroscopyOD",
+                            "biomicroscopyOS",
+                          ])
+                        }
+                      >
+                        <MdOutlineFileCopy size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Importar última</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyODToOE("biomicroscopyOD", "biomicroscopyOS")
+                        }
+                      >
+                        <MdSwitchLeft size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>OE semelhante</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleClearFields([
+                            "biomicroscopyOD",
+                            "biomicroscopyOS",
+                          ])
+                        }
+                      >
+                        <MdDeleteOutline size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Limpar</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardTitle>
           </CardHeader>
@@ -271,172 +313,225 @@ export function EvaluationMainForm({
           </CardContent>
         </Card>
 
-        <div className="flex flex-col gap-4 sm:flex-row">
-          {/* TONOMETRIA */}
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle className="flex justify-between gap-1">
-                Tonometria (TA)
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      handleCopyLastData(["tonometryOD", "tonometryOS"])
-                    }
-                  >
-                    <MdOutlineFileCopy size={18} />
-                  </Button>
-                  <Button
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      handleCopyODToOE("tonometryOD", "tonometryOS")
-                    }
-                  >
-                    <MdSwitchLeft size={18} />
-                  </Button>
-                  <Button
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      handleClearFields(["tonometryOD", "tonometryOS"])
-                    }
-                  >
-                    <MdDeleteOutline size={18} />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <div className="w-full">
-                  <FormField
-                    control={form.control}
-                    name="tonometryOD"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>OD</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Informe o resultado"
-                            value={field.value ?? ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="w-full">
-                  <FormField
-                    control={form.control}
-                    name="tonometryOS"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>OE</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Informe o resultado"
-                            value={field.value ?? ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+        {/* TONOMETRIA */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex justify-between gap-1">
+              Tonometria (TA)
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyLastData(["tonometryOD", "tonometryOS"])
+                        }
+                      >
+                        <MdOutlineFileCopy size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Importar última</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyODToOE("tonometryOD", "tonometryOS")
+                        }
+                      >
+                        <MdSwitchLeft size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>OE semelhante</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleClearFields(["tonometryOD", "tonometryOS"])
+                        }
+                      >
+                        <MdDeleteOutline size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Limpar</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
-            </CardContent>
-          </Card>
-          {/* PAQUIMETRIA */}
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle className="flex justify-between gap-1">
-                Paquimetria
-                <div className="flex gap-2">
-                  <Button
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      handleCopyLastData(["pachymetryOD", "pachymetryOS"])
-                    }
-                  >
-                    <MdOutlineFileCopy size={18} />
-                  </Button>
-                  <Button
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      handleCopyODToOE("pachymetryOD", "pachymetryOS")
-                    }
-                  >
-                    <MdSwitchLeft size={18} />
-                  </Button>
-                  <Button
-                    size="sm"
-                    type="button"
-                    variant="outline"
-                    onClick={() =>
-                      handleClearFields(["pachymetryOD", "pachymetryOS"])
-                    }
-                  >
-                    <MdDeleteOutline size={18} />
-                  </Button>
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-4 sm:flex-row">
-                <div className="w-full">
-                  <FormField
-                    control={form.control}
-                    name="pachymetryOD"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>OD</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Informe o resultado"
-                            value={field.value ?? ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <div className="w-full">
-                  <FormField
-                    control={form.control}
-                    name="pachymetryOS"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>OE</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder="Informe o resultado"
-                            value={field.value ?? ""}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="w-full">
+                <FormField
+                  control={form.control}
+                  name="tonometryOD"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>OD</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Informe o resultado"
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
-            </CardContent>
-          </Card>
-        </div>
+              <div className="w-full">
+                <FormField
+                  control={form.control}
+                  name="tonometryOS"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>OE</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Informe o resultado"
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* PAQUIMETRIA */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex justify-between gap-1">
+              Paquimetria
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyLastData(["pachymetryOD", "pachymetryOS"])
+                        }
+                      >
+                        <MdOutlineFileCopy size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Importar última</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyODToOE("pachymetryOD", "pachymetryOS")
+                        }
+                      >
+                        <MdSwitchLeft size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>OE semelhante</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleClearFields(["pachymetryOD", "pachymetryOS"])
+                        }
+                      >
+                        <MdDeleteOutline size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Limpar</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col gap-4 sm:flex-row">
+              <div className="w-full">
+                <FormField
+                  control={form.control}
+                  name="pachymetryOD"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>OD</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Informe o resultado"
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="w-full">
+                <FormField
+                  control={form.control}
+                  name="pachymetryOS"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>OE</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder="Informe o resultado"
+                          value={field.value ?? ""}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* FUNDOSCOPIA */}
         <Card>
@@ -444,36 +539,63 @@ export function EvaluationMainForm({
             <CardTitle className="flex justify-between gap-1">
               Fundoscopia
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    handleCopyLastData(["fundoscopyOD", "fundoscopyOS"])
-                  }
-                >
-                  <MdOutlineFileCopy size={18} />
-                </Button>
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    handleCopyODToOE("fundoscopyOD", "fundoscopyOS")
-                  }
-                >
-                  <MdSwitchLeft size={18} />
-                </Button>
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    handleClearFields(["fundoscopyOD", "fundoscopyOS"])
-                  }
-                >
-                  <MdDeleteOutline size={18} />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyLastData(["fundoscopyOD", "fundoscopyOS"])
+                        }
+                      >
+                        <MdOutlineFileCopy size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Importar última</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyODToOE("fundoscopyOD", "fundoscopyOS")
+                        }
+                      >
+                        <MdSwitchLeft size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>OE semelhante</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleClearFields(["fundoscopyOD", "fundoscopyOS"])
+                        }
+                      >
+                        <MdDeleteOutline size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Limpar</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardTitle>
           </CardHeader>
@@ -527,36 +649,63 @@ export function EvaluationMainForm({
             <CardTitle className="flex justify-between gap-1">
               Gonioscopia
               <div className="flex gap-2">
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    handleCopyLastData(["gonioscopyOD", "gonioscopyOS"])
-                  }
-                >
-                  <MdOutlineFileCopy size={18} />
-                </Button>
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    handleCopyODToOE("gonioscopyOD", "gonioscopyOS")
-                  }
-                >
-                  <MdSwitchLeft size={18} />
-                </Button>
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() =>
-                    handleClearFields(["gonioscopyOD", "gonioscopyOS"])
-                  }
-                >
-                  <MdDeleteOutline size={18} />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyLastData(["gonioscopyOD", "gonioscopyOS"])
+                        }
+                      >
+                        <MdOutlineFileCopy size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Importar última</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleCopyODToOE("gonioscopyOD", "gonioscopyOS")
+                        }
+                      >
+                        <MdSwitchLeft size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>OE semelhante</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() =>
+                          handleClearFields(["gonioscopyOD", "gonioscopyOS"])
+                        }
+                      >
+                        <MdDeleteOutline size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Limpar</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardTitle>
           </CardHeader>
@@ -607,24 +756,39 @@ export function EvaluationMainForm({
         {/* OCT */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex justify-between">
+            <CardTitle className="flex justify-between gap-1">
               OCT
-              <div className="flex-between flex items-center gap-1">
-                {form.getValues("octOD") && (
-                  <AccessFileButton fileName={`octOD-${rightEyeId}`}>
-                    OD
-                  </AccessFileButton>
-                )}
-                {form.getValues("octOS") && (
-                  <AccessFileButton fileName={`octOS-${leftEyeId}`}>
-                    OE
-                  </AccessFileButton>
-                )}
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton fileName={`octOD-${rightEyeId}`}>
+                        OD
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OD</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton fileName={`octOS-${leftEyeId}`}>
+                        OE
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OE</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4 sm:flex-row">
+              {/* OD */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -637,8 +801,7 @@ export function EvaluationMainForm({
                           type="file"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file)
-                              void void handleFileUpload(file, field.name);
+                            if (file) void handleFileUpload(file, field.name);
                           }}
                         />
                       </FormControl>
@@ -647,6 +810,7 @@ export function EvaluationMainForm({
                   )}
                 />
               </div>
+              {/* OS */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -659,8 +823,7 @@ export function EvaluationMainForm({
                           type="file"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
-                            if (file)
-                              void void handleFileUpload(file, field.name);
+                            if (file) void handleFileUpload(file, field.name);
                           }}
                         />
                       </FormControl>
@@ -676,24 +839,43 @@ export function EvaluationMainForm({
         {/* RETINOGRAFIA */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex justify-between">
+            <CardTitle className="flex justify-between gap-1">
               Retinografia
-              <div className="flex-between flex items-center gap-1">
-                {form.getValues("retinographyOD") && (
-                  <AccessFileButton fileName={`retinographyOD-${rightEyeId}`}>
-                    OD
-                  </AccessFileButton>
-                )}
-                {form.getValues("retinographyOS") && (
-                  <AccessFileButton fileName={`retinographyOS-${leftEyeId}`}>
-                    OE
-                  </AccessFileButton>
-                )}
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton
+                        fileName={`retinographyOD-${rightEyeId}`}
+                      >
+                        OD
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OD</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton
+                        fileName={`retinographyOS-${leftEyeId}`}
+                      >
+                        OE
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OE</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4 sm:flex-row">
+              {/* OD */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -704,7 +886,6 @@ export function EvaluationMainForm({
                       <FormControl>
                         <Input
                           type="file"
-                          className="w-full"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) void handleFileUpload(file, field.name);
@@ -716,6 +897,7 @@ export function EvaluationMainForm({
                   )}
                 />
               </div>
+              {/* OS */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -726,7 +908,6 @@ export function EvaluationMainForm({
                       <FormControl>
                         <Input
                           type="file"
-                          className="w-full"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) void handleFileUpload(file, field.name);
@@ -745,24 +926,41 @@ export function EvaluationMainForm({
         {/* CAMPO VISUAL */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex justify-between">
+            <CardTitle className="flex justify-between gap-1">
               Campo Visual
-              <div className="flex-between flex items-center gap-1">
-                {form.getValues("visualFieldOD") && (
-                  <AccessFileButton fileName={`visualFieldOD-${rightEyeId}`}>
-                    OD
-                  </AccessFileButton>
-                )}
-                {form.getValues("visualFieldOS") && (
-                  <AccessFileButton fileName={`visualFieldOS-${leftEyeId}`}>
-                    OE
-                  </AccessFileButton>
-                )}
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton
+                        fileName={`visualFieldOD-${rightEyeId}`}
+                      >
+                        OD
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OD</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton fileName={`visualFieldOS-${leftEyeId}`}>
+                        OE
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OE</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
-            </CardTitle>{" "}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4 sm:flex-row">
+              {/* OD */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -773,7 +971,6 @@ export function EvaluationMainForm({
                       <FormControl>
                         <Input
                           type="file"
-                          className="w-full"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) void handleFileUpload(file, field.name);
@@ -785,6 +982,7 @@ export function EvaluationMainForm({
                   )}
                 />
               </div>
+              {/* OS */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -795,7 +993,6 @@ export function EvaluationMainForm({
                       <FormControl>
                         <Input
                           type="file"
-                          className="w-full"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) void handleFileUpload(file, field.name);
@@ -814,24 +1011,41 @@ export function EvaluationMainForm({
         {/* ANGIOGRAFIA */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex justify-between">
+            <CardTitle className="flex justify-between gap-1">
               Angiografia
-              <div className="flex-between flex items-center gap-1">
-                {form.getValues("angiographyOD") && (
-                  <AccessFileButton fileName={`angiographyOD-${rightEyeId}`}>
-                    OD
-                  </AccessFileButton>
-                )}
-                {form.getValues("angiographyOS") && (
-                  <AccessFileButton fileName={`angiographyOS-${leftEyeId}`}>
-                    OE
-                  </AccessFileButton>
-                )}
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton
+                        fileName={`angiographyOD-${rightEyeId}`}
+                      >
+                        OD
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OD</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton fileName={`angiographyOS-${leftEyeId}`}>
+                        OE
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OE</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4 sm:flex-row">
+              {/* OD */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -842,7 +1056,6 @@ export function EvaluationMainForm({
                       <FormControl>
                         <Input
                           type="file"
-                          className="w-full"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) void handleFileUpload(file, field.name);
@@ -854,6 +1067,7 @@ export function EvaluationMainForm({
                   )}
                 />
               </div>
+              {/* OS */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -864,7 +1078,6 @@ export function EvaluationMainForm({
                       <FormControl>
                         <Input
                           type="file"
-                          className="w-full"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) void handleFileUpload(file, field.name);
@@ -883,24 +1096,39 @@ export function EvaluationMainForm({
         {/* TC DE CÓRNEA */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex justify-between">
+            <CardTitle className="flex justify-between gap-1">
               TC de Córnea
-              <div className="flex-between flex items-center gap-1">
-                {form.getValues("ctCorneaOD") && (
-                  <AccessFileButton fileName={`ctCorneaOD-${rightEyeId}`}>
-                    OD
-                  </AccessFileButton>
-                )}
-                {form.getValues("ctCorneaOS") && (
-                  <AccessFileButton fileName={`ctCorneaOS-${leftEyeId}`}>
-                    OE
-                  </AccessFileButton>
-                )}
+              <div className="flex gap-2">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton fileName={`ctCorneaOD-${rightEyeId}`}>
+                        OD
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OD</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <AccessFileButton fileName={`ctCorneaOS-${leftEyeId}`}>
+                        OE
+                      </AccessFileButton>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Acessar arquivo OE</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-4 sm:flex-row">
+              {/* OD */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -911,7 +1139,6 @@ export function EvaluationMainForm({
                       <FormControl>
                         <Input
                           type="file"
-                          className="w-full"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) void handleFileUpload(file, field.name);
@@ -923,6 +1150,7 @@ export function EvaluationMainForm({
                   )}
                 />
               </div>
+              {/* OS */}
               <div className="w-full">
                 <FormField
                   control={form.control}
@@ -933,7 +1161,6 @@ export function EvaluationMainForm({
                       <FormControl>
                         <Input
                           type="file"
-                          className="w-full"
                           onChange={(e) => {
                             const file = e.target.files?.[0];
                             if (file) void handleFileUpload(file, field.name);
@@ -949,7 +1176,7 @@ export function EvaluationMainForm({
           </CardContent>
         </Card>
 
-        {/* Diagnóstico */}
+        {/* DIAGNÓSTICO */}
         <FormField
           control={form.control}
           name="diagnosis"
@@ -957,14 +1184,23 @@ export function EvaluationMainForm({
             <FormItem>
               <FormLabel className="flex justify-between">
                 Diagnóstico
-                <Button
-                  size="sm"
-                  type="button"
-                  variant="outline"
-                  onClick={() => handleCopyLastData(["diagnosis"])}
-                >
-                  <MdOutlineFileCopy size={18} />
-                </Button>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        size="sm"
+                        type="button"
+                        variant="outline"
+                        onClick={() => handleCopyLastData(["diagnosis"])}
+                      >
+                        <MdOutlineFileCopy size={18} />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Importar última</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </FormLabel>
               <FormControl>
                 <Textarea
@@ -978,7 +1214,7 @@ export function EvaluationMainForm({
           )}
         />
 
-        {/* Tratamento */}
+        {/* TRATAMENTO */}
         <FormField
           control={form.control}
           name="treatment"
@@ -997,7 +1233,7 @@ export function EvaluationMainForm({
           )}
         />
 
-        {/* Acompanhamento */}
+        {/* ACOMPANHAMENTO */}
         <FormField
           control={form.control}
           name="followUp"
@@ -1016,7 +1252,7 @@ export function EvaluationMainForm({
           )}
         />
 
-        {/* Próxima Consulta */}
+        {/* PRÓXIMA CONSULTA */}
         <FormField
           control={form.control}
           name="nextAppointment"
@@ -1031,7 +1267,7 @@ export function EvaluationMainForm({
           )}
         />
 
-        {/* Anotações */}
+        {/* ANOTAÇÕES */}
         <FormField
           control={form.control}
           name="notes"

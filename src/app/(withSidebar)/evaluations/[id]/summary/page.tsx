@@ -145,24 +145,24 @@ export default async function EvaluationSummaryPage({
   const bestLeftRefraction = getBestRefraction(eyes?.leftEye?.refraction || []);
 
   const bestRightRefractionSphericalString =
-    parseFloat(bestRightRefraction.spherical) > 0
-      ? "+" + parseFloat(bestRightRefraction.spherical).toFixed(2)
-      : parseFloat(bestRightRefraction.spherical).toFixed(2);
+    parseFloat(bestRightRefraction?.spherical) > 0
+      ? "+" + parseFloat(bestRightRefraction?.spherical).toFixed(2)
+      : parseFloat(bestRightRefraction?.spherical).toFixed(2);
   const bestRightRefractionCylinderString =
-    parseFloat(bestRightRefraction.cylinder) > 0
-      ? "+" + parseFloat(bestRightRefraction.cylinder).toFixed(2)
-      : parseFloat(bestRightRefraction.cylinder).toFixed(2);
-  const bestRightRefractionAxisString = `${bestRightRefraction.axis}º`;
+    parseFloat(bestRightRefraction?.cylinder) > 0
+      ? "+" + parseFloat(bestRightRefraction?.cylinder).toFixed(2)
+      : parseFloat(bestRightRefraction?.cylinder).toFixed(2);
+  const bestRightRefractionAxisString = `${bestRightRefraction?.axis}º`;
 
   const bestLeftRefractionSphericalString =
-    parseFloat(bestLeftRefraction.spherical) > 0
-      ? "+" + parseFloat(bestLeftRefraction.spherical).toFixed(2)
-      : parseFloat(bestLeftRefraction.spherical).toFixed(2);
+    parseFloat(bestLeftRefraction?.spherical) > 0
+      ? "+" + parseFloat(bestLeftRefraction?.spherical).toFixed(2)
+      : parseFloat(bestLeftRefraction?.spherical).toFixed(2);
   const bestLeftRefractionCylinderString =
-    parseFloat(bestLeftRefraction.cylinder) > 0
-      ? "+" + parseFloat(bestLeftRefraction.cylinder).toFixed(2)
-      : parseFloat(bestLeftRefraction.cylinder).toFixed(2);
-  const bestLeftRefractionAxisString = `${bestLeftRefraction.axis}º`;
+    parseFloat(bestLeftRefraction?.cylinder) > 0
+      ? "+" + parseFloat(bestLeftRefraction?.cylinder).toFixed(2)
+      : parseFloat(bestLeftRefraction?.cylinder).toFixed(2);
+  const bestLeftRefractionAxisString = `${bestLeftRefraction?.axis}º`;
 
   // Função para formatar data
   const formatDate = (date: Date | string | null | undefined) => {
