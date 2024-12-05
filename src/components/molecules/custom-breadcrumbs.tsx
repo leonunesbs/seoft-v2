@@ -66,7 +66,6 @@ const routeConfig: RouteConfig[] = [
       {
         path: "/patients/:id/history",
         label: () => `Histórico`,
-        redirectUrl: "/patients",
       },
     ],
   },
