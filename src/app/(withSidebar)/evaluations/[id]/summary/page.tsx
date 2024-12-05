@@ -404,7 +404,7 @@ export default async function EvaluationSummaryPage({
       {/* Dados dos Olhos, Acuidade Visual, Refração e Históricos de Cirurgias */}
       <div className="flex flex-col gap-6 sm:flex-row">
         {/* Olho Direito */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Olho Direito (OD)</CardTitle>
           </CardHeader>
@@ -480,7 +480,7 @@ export default async function EvaluationSummaryPage({
         </Card>
 
         {/* Olho Esquerdo */}
-        <Card>
+        <Card className="w-full">
           <CardHeader>
             <CardTitle>Olho Esquerdo (OE)</CardTitle>
           </CardHeader>

@@ -83,12 +83,14 @@ export function SearchTable({ data }: { data: Patient[] }) {
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <Button
-                        variant="outline"
-                        aria-label={`Histórico de ${patient.name}`}
-                      >
-                        <MdOutlineHistory size={18} />
-                      </Button>
+                      <Link href={`/patients/${patient.id}/history`} passHref>
+                        <Button
+                          variant="outline"
+                          aria-label={`Histórico de ${patient.name}`}
+                        >
+                          <MdOutlineHistory size={18} />
+                        </Button>
+                      </Link>
                     </TooltipTrigger>
                     <TooltipContent>
                       <p>Histórico</p>

@@ -198,4 +198,38 @@ export const patientRouter = createTRPCRouter({
         });
       }
     }),
+
+  getEvaluationHistory: protectedProcedure
+    .input(z.string())
+    .mutation(async ({ input, ctx }) => {
+      return await ctx.db.patient.findUnique({
+        where: { id: input },
+        include: {
+          evaluations: {
+            where: { done: true },
+            orderBy: { createdAt: "desc" },
+            include: {
+              eyes: {
+                include: {
+                  leftEye: {
+                    include: {
+                      refraction: { orderBy: { recordedAt: "desc" } },
+                      surgeries: { orderBy: { date: "desc" } },
+                      logs: true,
+                    },
+                  },
+                  rightEye: {
+                    include: {
+                      refraction: { orderBy: { recordedAt: "desc" } },
+                      surgeries: { orderBy: { date: "desc" } },
+                      logs: true,
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+      });
+    }),
 });
